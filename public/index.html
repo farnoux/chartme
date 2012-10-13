@@ -5,14 +5,43 @@
 	<title>Chart me</title>
 
 	<script src="vendor/d3/d3.v2.js"></script>
-
 	<script src="vendor/jquery/jquery.js"></script>
 	<script src="vendor/bootstrap/js/bootstrap-tooltip.js"></script>
 
 	<script src="chartme.js"></script>
 
 	<style type="text/css">
+		.line {
+			fill: none;
+			stroke: steelblue;
+			stroke-width: 1.5px;
+		}
 
+		.dot {
+			fill: white;
+			stroke: steelblue;
+			stroke-width: 1.5px;
+		}
+/*
+		.axis path, .axis line {
+			fill: none;
+			stroke: #000;
+			shape-rendering: crispEdges;
+		}
+*/
+		.axis {
+			shape-rendering: crispEdges;
+		}
+
+		.y.axis .minor {
+			stroke-opacity: .5;
+		}
+		.y.axis path {
+			display: none;
+		}
+		.y.axis line {
+			stroke: #ddd;
+		}
 	</style>
 </head>
 <body>
@@ -31,7 +60,7 @@
 		];
 
 		var colors = {
-			  green: ["#ecf0d1", "#afc331"]
+				green: ["#ecf0d1", "#afc331"]
 			, blue: ["#e6f6ff", "#98d8fd"]
 			, purple: ["#e6cfec", "#9632b1"]
 			, black: ["#cbcbcb", "#101010"]

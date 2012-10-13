@@ -1,8 +1,9 @@
 chartme.line = function(data) {
 
 	var
-		  width  = 300
-		, height = 300
+		  margin = { top: 20, right: 20, bottom: 20, left: 20 }
+		, width  = 600 - margin.left - margin.right
+		, height = 300 - margin.top - margin.bottom
 		, colors = ["#ecf0d1", "#afc331"]
 		, radius = 150
 		, donutRate = 0.6
@@ -17,29 +18,51 @@ chartme.line = function(data) {
 		selection.each(function (d, i) {
 
 			var x = d3.scale.linear()
+				.domain([0, data.length - 1])
+				.range([0, width]);
+
+			var y = d3.scale.linear()
 				.domain([0, max])
-				.range([0, w - 10]);
-
-			var y = d3.scale.ordinal()
-				.domain(d3.range(0, data.length))
-				.rangeBands([0, height - 10], 0.15);
-
-			svg = d3.select(this).append("svg")
-				.data([data])
-					.attr("width", width)
-					.attr("height", height)
-				.append("g");
-
-
-			var label = svg.append('text')
-				.attr("text-anchor", "middle")
+				.range([height, 0])
+				.nice()
 				;
 
-			var color = d3.scale.linear()
-				.domain([min, max])
-				.range(colors);
+			var yAxis = d3.svg.axis()
+				.scale(y)
+				.ticks(4)
+				.tickSize(width)
+				.tickSubdivide(true)
+				.orient("left")
+				;
 
-			svg.selectAll('');
+			svg = d3.select(this).append("svg")
+				.datum(data)
+					.attr("width", width + margin.left + margin.right)
+					.attr("height", height + margin.top + margin. bottom)
+				.append("g")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			var line = d3.svg.line()
+				.x(function (d, i) { return x(i); })
+				.y(function (d) { return y(d.value); })
+				.interpolate('cardinal');
+
+			svg.append("g")
+				.attr("class", "y axis")
+				.attr("transform", "translate(" + width + ",0)")
+				.call(yAxis);
+
+			svg.append("path")
+				.attr("class", "line")
+				.attr("d", line);
+
+			svg.selectAll(".dot")
+					.data(data)
+				.enter().append("circle")
+					.attr("class", "dot")
+					.attr("cx", line.x())
+					.attr("cy", line.y())
+					.attr("r", 3.5);
 		});
 	}
 
