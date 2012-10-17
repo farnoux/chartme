@@ -89,15 +89,25 @@
 	<div class="chart" data-chart='{"type":"donut","data":[["Fred Arnoux","1.20"],["Fred+1","3.11"],["Fred+2","29.15"]]}'></div>
 
 	<script type="text/javascript">
-		var data = [
+		var data1 = [
 			 {value: 5, label: "ah"}
 			,{value:8, label: "oh"}
 			,{value:6, label: "hi"}
 			,{value: 10, label: "yep"}
 			,{value: 19, label: "hop"}
 			,{value: 16, label: "tut"}
-			,{value: 0, label: "pif"}
 		];
+
+		var data2 = [
+			 {value: 5, label: "ah"}
+			,{value:2, label: "oh"}
+			,{value:11, label: "hi"}
+			,{value: 6, label: "yep"}
+			,{value: 15, label: "hop"}
+			,{value: 18, label: "tut"}
+		];
+
+		var data = data1;
 
 		var colors = {
 				green: ["#ecf0d1", "#afc331"]
@@ -108,9 +118,7 @@
 
 		var donut = chartme.donut(data)
 			.colors(colors.green)
-			.on('slice.mouseover', function (event, d, i) {
-				// $(this).tooltip({ title: d });
-			});
+			;
 
 		d3.select('#donut-chart').call(donut);
 
@@ -121,6 +129,12 @@
 		// d3.select('#bar-chart').call(bar);
 
 		var chart = $('[data-chart]').chartme();
+
+		d3.select(window).on("click", function() {
+			data = data === data1 ? data2 : data1; // swap the data
+			donut.update(data);
+		});
+
 
 	</script>
 </body>

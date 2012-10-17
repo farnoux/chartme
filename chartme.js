@@ -3,70 +3,62 @@ var chartme = window.chartme = { version: '0.0.1' };
 chartme.donut = function(data) {
 
 	var
-		  width  = 300
+			width  = 300
 		, height = 300
 		, colors = ["#ecf0d1", "#afc331"]
-		, radius = 150
+		, radius
 		, donutRate = 0.6
 		, min = 0
 		, max
 		, valueProperty = "value"
 		, labelProperty = "label"
 		, svg
-		, dispatcher = {
-			slice: d3.dispatch('click', 'mouseover')
-		};
+		;
 
 	function chart(selection) {
 		data.forEach(function (d) {
 			d[valueProperty] = +d[valueProperty];
 		});
 
+		radius = Math.min(width, height) * 0.5;
 		max = d3.max(data.map(function (d) { return d[valueProperty]; }));
 
 		selection.each(function (d, i) {
 
 			svg = d3.select(this).append("svg")
-				.data([data])
 					.attr("width", width)
 					.attr("height", height)
 				.append("g")
 					// Move the center of the chart from 0, 0 to radius, radius
-					.attr("transform", "translate(" + radius + "," + radius + ")");
+					.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 
 			var colorScale = d3.scale.linear()
 				.domain([min, max])
 				.range(colors);
 
-				console.log(max);
-
-			// This will create <path> elements using arc data.
+			// Generate arc data used by <path> elements.
 			var arc = d3.svg.arc()
 				.outerRadius(radius * 0.98)
 				.innerRadius(radius * donutRate);
 
-
-			// This will create arc data given a list of values
 			var pie = d3.layout.pie()
+				.sort(null)
 				.value(function (d) { return d[valueProperty]; });
 
 			var slices = svg.selectAll('g.slice')
-				.data(pie)
-				.enter().append('g')
+				.data(pie(data));
+
+			slices.enter().append('g')
 					.attr('class', 'slice');
 
-			var arcHover = d3.svg.arc()
-				.innerRadius(radius * 0.21)
-				.outerRadius(radius * donutRate * 0.99);
-
-			// Slices.
-			slices.append('path')
+			// Slice path.
+			var arcs = slices.append('path')
 				.attr("stroke", "#fff")
-				.attr('fill', function (d, i) { console.log(d);return colorScale(d.data[valueProperty]); })
+				.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
 				.attr('d', arc);
 
-			// Slice labels.
+			// Slice label.
 			slices.append("text")
 				// Position the label origin to the slice's center.
 				.attr("transform", function (d) {
@@ -78,6 +70,9 @@ chartme.donut = function(data) {
 					return d.data[labelProperty];
 				});
 
+			var arcHover = d3.svg.arc()
+				.innerRadius(radius * 0.21)
+				.outerRadius(radius * donutRate * 0.99);
 
 			var pathHover, circleHover, labelHover;
 
@@ -105,6 +100,31 @@ chartme.donut = function(data) {
 				pathHover.remove();
 			});
 
+			chart.update = function (newData) {
+				console.log("updateeee");
+				// Recompute the angles and rebind the data.
+				slices = slices.data(pie(newData));
+
+				// slices.enter()
+				// 	.append()
+
+				// slices
+				// 	.selectAll("path")
+				// 	.transition().duration(750)
+				// 	.attr("d", function (d) {
+				// 		console.log(d.data);
+				// 		return arc(d.data[valueProperty]);
+				// 	});
+
+				slices.select('path')
+					.transition().duration(750)
+						.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
+						.attr('d', arc);
+
+				slices.exit().remove();
+					// .attrTween("d", arcTween);
+			};
+
 		});
 	}
 
@@ -123,12 +143,6 @@ chartme.donut = function(data) {
 	chart.colors = function (value) {
 		if (!arguments.length) return colors;
 		colors = value;
-		return chart;
-	};
-
-	chart.on = function (eventName, handler) {
-		var eventNameWithNamespace = eventName.split('.');
-		dispatcher[eventNameWithNamespace[0]].on(eventNameWithNamespace[1], handler);
 		return chart;
 	};
 
