@@ -7,13 +7,21 @@ chartme.donut = function(data) {
 		, radius = 150
 		, donutRate = 0.6
 		, min = 0
-		, max = d3.max(data.map(function (d) { return d.value; }))
+		, max
+		, valueProperty = "value"
+		, labelProperty = "label"
 		, svg
 		, dispatcher = {
 			slice: d3.dispatch('click', 'mouseover')
 		};
 
 	function chart(selection) {
+		data.forEach(function (d) {
+			d[valueProperty] = +d[valueProperty];
+		});
+
+		max = d3.max(data.map(function (d) { return d[valueProperty]; }));
+
 		selection.each(function (d, i) {
 
 			svg = d3.select(this).append("svg")
@@ -25,54 +33,35 @@ chartme.donut = function(data) {
 					.attr("transform", "translate(" + radius + "," + radius + ")");
 
 
-			var label = svg.append('text')
-				.attr("text-anchor", "middle")
-				;
-
-			var color = d3.scale.linear()
+			var colorScale = d3.scale.linear()
 				.domain([min, max])
 				.range(colors);
+
+				console.log(max);
 
 			// This will create <path> elements using arc data.
 			var arc = d3.svg.arc()
 				.outerRadius(radius * 0.98)
 				.innerRadius(radius * donutRate);
 
-			var arcHover = d3.svg.arc()
-				.outerRadius(radius)
-				.innerRadius(radius * donutRate * 0.95);
 
 			// This will create arc data given a list of values
 			var pie = d3.layout.pie()
-				.value(function (d) { return d.value; });
+				.value(function (d) { return d[valueProperty]; });
 
 			var slices = svg.selectAll('g.slice')
 				.data(pie)
 				.enter().append('g')
 					.attr('class', 'slice');
 
-			slices.on('mouseover', function (d, i) {
-				d3.select(this).select('path')
-					.transition()
-						.duration(200)
-					.attr('d', arcHover);
-
-				label.text(d.value + '%');
-			});
-
-			slices.on('mouseout', function (d, i) {
-				d3.select(this).select('path')
-					.transition()
-						.duration(100)
-					.attr('d', arc);
-
-				label.text('');
-			});
+			var arcHover = d3.svg.arc()
+				.innerRadius(radius * 0.21)
+				.outerRadius(radius * donutRate * 0.99);
 
 			// Slices.
 			slices.append('path')
 				.attr("stroke", "#fff")
-				.attr('fill', function(d, i) { return color(d.value); })
+				.attr('fill', function (d, i) { console.log(d);return colorScale(d.data[valueProperty]); })
 				.attr('d', arc);
 
 			// Slice labels.
@@ -84,8 +73,35 @@ chartme.donut = function(data) {
 				// Center the text on its origin.
 				.attr("text-anchor", "middle")
 				.text(function(d, i) {
-					return d.data.label;
+					return d.data[labelProperty];
 				});
+
+
+			var pathHover, circleHover, labelHover;
+
+			slices.on('mouseover', function (d, i) {
+
+				pathHover = svg.insert("path")
+					.attr("fill", colorScale(d.data[valueProperty]))
+					.attr("d", arcHover(d))
+					;
+
+				circleHover = svg.append("circle")
+					.attr("r", radius * 0.2)
+					.style("fill", "#eee")
+					;
+
+				labelHover = svg.append('text')
+					.attr("dy", ".35em")
+					.attr("text-anchor", "middle")
+					.text(d.data[valueProperty]);
+			});
+
+			slices.on('mouseout', function (d, i) {
+				labelHover.remove();
+				circleHover.remove();
+				pathHover.remove();
+			});
 
 		});
 	}
@@ -111,6 +127,18 @@ chartme.donut = function(data) {
 	chart.on = function (eventName, handler) {
 		var eventNameWithNamespace = eventName.split('.');
 		dispatcher[eventNameWithNamespace[0]].on(eventNameWithNamespace[1], handler);
+		return chart;
+	};
+
+	chart.value = function (value) {
+		if (!arguments.length) return valueProperty;
+		valueProperty = value;
+		return chart;
+	};
+
+	chart.label = function (value) {
+		if (!arguments.length) return labelProperty;
+		labelProperty = value;
 		return chart;
 	};
 

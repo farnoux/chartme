@@ -3,6 +3,8 @@ JS_FILES = \
 	src/core.js \
 	src/donut.js \
 	src/line.js \
+	src/bar.js \
+	src/plugin.js \
 	src/end.js
 
 all: clean chartme.js
