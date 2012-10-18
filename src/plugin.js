@@ -1,7 +1,7 @@
 
 if ($) {
 	$.fn.chartme = function (option) {
-		return this.each(function () {
+		// return this.each(function () {
 				var
 					  $this = $(this)
 					, chartData = $this.data('chart');
@@ -13,16 +13,17 @@ if ($) {
 				var doWithChart = {
 					'bar' : function (chart) {
 						chart.dateFormat('%Y%m%d').x(0).y(1);
-					}
-					, 'donut' : function () {
+					},
+					'donut' : function () {
 						chart.label(0).value(1);
 					}
 				};
 
 				doWithChart[chartData.type](chart);
 
-				d3.select(this).call(chart);
-		});
+				d3.select(this[0]).call(chart);
+				return chart;
+		// });
 	};
 }
 

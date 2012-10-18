@@ -99,7 +99,14 @@ chartme.donut = function(data) {
 			});
 
 			chart.update = function (newData) {
-				console.log("updateeee");
+				if (!newData) {
+					return;
+				}
+
+				newData.forEach(function (d) {
+					d[valueProperty] = +d[valueProperty];
+				});
+
 				// Recompute the angles and rebind the data.
 				slices = slices.data(pie(newData));
 
