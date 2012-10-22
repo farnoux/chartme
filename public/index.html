@@ -105,6 +105,7 @@
 			,{value: 6, label: "yep"}
 			,{value: 15, label: "hop"}
 			,{value: 18, label: "tut"}
+			,{value: 10, label: "iii"}
 		];
 
 		var data = data1;
@@ -125,14 +126,19 @@
 		var line = chartme.line(data);
 		d3.select('#line-chart').call(line);
 
-		// var bar = chartme.bar(data).colors(colors.purple).y('value');
-		// d3.select('#bar-chart').call(bar);
+		var bar = chartme.bar(data)
+			.colors(colors.purple)
+			.x('label')
+			.y('value');
+
+		d3.select('#bar-chart').call(bar);
 
 		var chart = $('[data-chart]').chartme();
 
 		d3.select(window).on("click", function() {
 			data = data === data1 ? data2 : data1; // swap the data
 			donut.update(data);
+			bar.update(data);
 		});
 
 

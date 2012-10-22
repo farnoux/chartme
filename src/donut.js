@@ -14,12 +14,8 @@ chartme.donut = function(data) {
 		;
 
 	function chart(selection) {
-		data.forEach(function (d) {
-			d[valueProperty] = +d[valueProperty];
-		});
 
 		radius = Math.min(width, height) * 0.5;
-		max = d3.max(data.map(function (d) { return d[valueProperty]; }));
 
 		selection.each(function (d, i) {
 
@@ -32,7 +28,6 @@ chartme.donut = function(data) {
 
 
 			var colorScale = d3.scale.linear()
-				.domain([min, max])
 				.range(colors);
 
 			// Generate arc data used by <path> elements.
@@ -44,19 +39,22 @@ chartme.donut = function(data) {
 				.sort(null)
 				.value(function (d) { return d[valueProperty]; });
 
-			var slices = svg.selectAll('g.slice')
-				.data(pie(data));
 
-			slices.enter().append('g')
-					.attr('class', 'slice');
+			// Store the currently-displayed angles in this._current.
+			// Then, interpolate from this._current to the new angles.
+			// See http://bl.ocks.org/1346410
+			function arcTween(a) {
+				var i = d3.interpolate(this._current, a);
+				this._current = i(0);
+				return function(t) {
+					return arc(i(t));
+				};
+			}
 
-			// Slice path.
-			var arcs = slices.append('path')
-				.attr("stroke", "#fff")
-				.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
-				.attr('d', arc);
 
 			// Slice label.
+/*
+
 			slices.append("text")
 				// Position the label origin to the slice's center.
 				.attr("transform", function (d) {
@@ -67,69 +65,88 @@ chartme.donut = function(data) {
 				.text(function(d, i) {
 					return d.data[labelProperty];
 				});
+*/
 
-			var arcHover = d3.svg.arc()
-				.innerRadius(radius * 0.21)
-				.outerRadius(radius * donutRate * 0.99);
+			// var arcHover = d3.svg.arc()
+			// 	.innerRadius(radius * 0.21)
+			// 	.outerRadius(radius * donutRate * 0.99);
 
-			var pathHover, circleHover, labelHover;
+			// var pathHover, circleHover, labelHover;
 
-			slices.on('mouseover', function (d, i) {
+			// slices.on('mouseover', function (d, i) {
 
-				pathHover = svg.insert("path")
-					.attr("fill", colorScale(d.data[valueProperty]))
-					.attr("d", arcHover(d))
-					;
+			// 	pathHover = svg.insert("path")
+			// 		.attr("fill", colorScale(d.data[valueProperty]))
+			// 		.attr("d", arcHover(d))
+			// 		;
 
-				circleHover = svg.append("circle")
-					.attr("r", radius * 0.2)
-					.style("fill", "#eee")
-					;
+			// 	circleHover = svg.append("circle")
+			// 		.attr("r", radius * 0.2)
+			// 		.style("fill", "#eee")
+			// 		;
 
-				labelHover = svg.append('text')
-					.attr("dy", ".35em")
-					.attr("text-anchor", "middle")
-					.text(d.data[valueProperty]);
-			});
+			// 	labelHover = svg.append('text')
+			// 		.attr("dy", ".35em")
+			// 		.attr("text-anchor", "middle")
+			// 		.text(d.data[valueProperty]);
+			// });
 
-			slices.on('mouseout', function (d, i) {
-				labelHover.remove();
-				circleHover.remove();
-				pathHover.remove();
-			});
+			// slices.on('mouseout', function (d, i) {
+			// 	labelHover.remove();
+			// 	circleHover.remove();
+			// 	pathHover.remove();
+			// });
 
 			chart.update = function (newData) {
 				if (!newData) {
 					return;
 				}
 
-				newData.forEach(function (d) {
+				data.forEach(function (d) {
 					d[valueProperty] = +d[valueProperty];
 				});
 
-				// Recompute the angles and rebind the data.
-				slices = slices.data(pie(newData));
+				max = d3.max(data.map(function (d) { return d[valueProperty]; }));
 
-				// slices.enter()
-				// 	.append()
+				colorScale.domain([min, max]);
 
-				// slices
-				// 	.selectAll("path")
-				// 	.transition().duration(750)
-				// 	.attr("d", function (d) {
-				// 		console.log(d.data);
-				// 		return arc(d.data[valueProperty]);
-				// 	});
+				var slices = svg.selectAll('g.slice')
+					.data(pie(newData));
 
-				slices.select('path')
-					.transition().duration(750)
+				// Create.
+				slices.enter().append('g')
+					.attr('class', 'slice')
+					// Slice path.
+					.append('path')
+						.attr("stroke", "#fff")
 						.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
-						.attr('d', arc);
+						// .attr('d', arc)
+					.transition()
+						.duration(750)
+						// .attrTween("d", arcTween)
+						.each(function (d) { this._current = d; })
+						;
 
-				slices.exit().remove();
-					// .attrTween("d", arcTween);
+				// Update.
+				slices.select('path').transition()
+					.duration(750)
+					.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
+					.attrTween("d", arcTween)
+						// .attr('d', arc)
+						;
+
+				// Remove.
+				slices.exit().transition()
+					.duration(750)
+					.select('path')
+					.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
+					.attrTween("d", arcTween)
+					// .attr("fill", "red")
+					.remove()
+					;
 			};
 
+			chart.update(data);
 		});
 	}
 

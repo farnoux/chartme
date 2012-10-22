@@ -97,16 +97,7 @@ chartme.bar = function(data) {
 			svg = svg.append("g")
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-			svg.selectAll(".bar")
-				.data(data)
-				.enter().append("rect")
-					.attr("class", "bar")
-					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
-					.attr("width", xScale.rangeBand())
-					.attr("y", function (d, i) { return yScale(d[yProperty]); })
-					.attr("height", function (d) { return height - yScale(d[yProperty]) + 4; })
-					.attr("x", function (d, i) { return xScale(i); })
-					;
+
 
 			// see http://stackoverflow.com/questions/10727892/how-to-center-the-bootstrap-tooltip-on-an-svg
 			$("svg .bar").tooltip({
@@ -117,6 +108,35 @@ chartme.bar = function(data) {
 				}
 			});
 
+
+			chart.update = function update (newData) {
+				if (!newData) {
+					return;
+				}
+
+				var bars = svg.selectAll(".bar")
+					.data(newData);
+
+				bars.enter().append("rect")
+					.attr("class", "bar")
+					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
+					.attr("width", xScale.rangeBand())
+					.attr("y", function (d, i) { return yScale(d[yProperty]); })
+					.attr("height", function (d) { return height - yScale(d[yProperty]) + 4; })
+					.attr("x", function (d, i) { return xScale(i); })
+					;
+
+				bars.transition()
+					.duration(300)
+					.attr("y", function (d, i) { return yScale(d[yProperty]); })
+					.attr("height", function (d) { return height - yScale(d[yProperty]) + 4; })
+					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
+					;
+
+				bars.exit().remove();
+			};
+
+			chart.update(data);
 
 		});
 	}
