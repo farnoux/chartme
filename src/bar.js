@@ -27,33 +27,22 @@ chartme.bar = function(data) {
 		var inputDateFormat = d3.time.format(dateFormat);
 		var outputDateFormat = d3.time.format('%d-%m-%Y');
 
-		data.forEach(function (d) {
-			d[xProperty] = inputDateFormat.parse(d[xProperty]);
-			d[yProperty] = +d[yProperty];
-		});
-
-		max = d3.max(data.map(function (d) { return d[yProperty]; }));
-
 		selection.each(function (d, i) {
 
 			xScale = d3.scale.ordinal()
-				.domain(d3.range(0, data.length))
 				.rangeRoundBands([0, width], 0.15);
 
+			yScale = d3.scale.linear()
+				.range([height, 0])
+				.nice()
+				;
 
 
 			var xTimeScale = d3.time.scale()
 				.domain(d3.extent(data, function (d) { return d[xProperty]; }))
 				.range([0, width]);
 
-			yScale = d3.scale.linear()
-				.domain([0, max])
-				.range([height, 0])
-				.nice()
-				;
-
 			var colorScale = d3.scale.linear()
-				.domain([min, max])
 				.range(colors);
 
 
@@ -109,13 +98,24 @@ chartme.bar = function(data) {
 			});
 
 
-			chart.update = function update (newData) {
-				if (!newData) {
+			chart.update = function update (data) {
+				if (!data) {
 					return;
 				}
 
+				data.forEach(function (d) {
+					d[xProperty] = inputDateFormat.parse(d[xProperty]);
+					d[yProperty] = +d[yProperty];
+				});
+
+				max = d3.max(data.map(function (d) { return d[yProperty]; }));
+
+				xScale.domain(d3.range(0, data.length));
+				yScale.domain([0, max]);
+				colorScale.domain([min, max]);
+
 				var bars = svg.selectAll(".bar")
-					.data(newData);
+					.data(data);
 
 				bars.enter().append("rect")
 					.attr("class", "bar")

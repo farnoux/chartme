@@ -99,8 +99,8 @@ chartme.donut = function(data) {
 			// 	pathHover.remove();
 			// });
 
-			chart.update = function (newData) {
-				if (!newData) {
+			chart.update = function (data) {
+				if (!data) {
 					return;
 				}
 
@@ -113,7 +113,7 @@ chartme.donut = function(data) {
 				colorScale.domain([min, max]);
 
 				var slices = svg.selectAll('g.slice')
-					.data(pie(newData));
+					.data(pie(data));
 
 				// Create.
 				slices.enter().append('g')
@@ -355,19 +355,11 @@ chartme.bar = function(data) {
 		var inputDateFormat = d3.time.format(dateFormat);
 		var outputDateFormat = d3.time.format('%d-%m-%Y');
 
-		data.forEach(function (d) {
-			d[xProperty] = inputDateFormat.parse(d[xProperty]);
-			d[yProperty] = +d[yProperty];
-		});
-
-		max = d3.max(data.map(function (d) { return d[yProperty]; }));
-
 		selection.each(function (d, i) {
 
 			xScale = d3.scale.ordinal()
 				.domain(d3.range(0, data.length))
 				.rangeRoundBands([0, width], 0.15);
-
 
 
 			var xTimeScale = d3.time.scale()
@@ -381,7 +373,6 @@ chartme.bar = function(data) {
 				;
 
 			var colorScale = d3.scale.linear()
-				.domain([min, max])
 				.range(colors);
 
 
@@ -437,13 +428,24 @@ chartme.bar = function(data) {
 			});
 
 
-			chart.update = function update (newData) {
-				if (!newData) {
+			chart.update = function update (data) {
+				if (!data) {
 					return;
 				}
 
+				data.forEach(function (d) {
+					d[xProperty] = inputDateFormat.parse(d[xProperty]);
+					d[yProperty] = +d[yProperty];
+				});
+
+				max = d3.max(data.map(function (d) { return d[yProperty]; }));
+
+				xScale.domain(d3.range(0, data.length));
+				yScale.domain([0, max]);
+				colorScale.domain([min, max]);
+
 				var bars = svg.selectAll(".bar")
-					.data(newData);
+					.data(data);
 
 				bars.enter().append("rect")
 					.attr("class", "bar")

@@ -97,8 +97,8 @@ chartme.donut = function(data) {
 			// 	pathHover.remove();
 			// });
 
-			chart.update = function (newData) {
-				if (!newData) {
+			chart.update = function (data) {
+				if (!data) {
 					return;
 				}
 
@@ -111,7 +111,7 @@ chartme.donut = function(data) {
 				colorScale.domain([min, max]);
 
 				var slices = svg.selectAll('g.slice')
-					.data(pie(newData));
+					.data(pie(data));
 
 				// Create.
 				slices.enter().append('g')
