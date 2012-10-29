@@ -336,7 +336,7 @@ chartme.bar = function(data) {
 		, xInputFormat = d3.time.format("%Y%m%d")
 		, xOutputFormat = d3.time.format("%d-%m-%Y")
 		, xProperty = 'x'
-		, yProperty = 'y'
+		, yProperty = ['y']
 		, radius = 150
 		, donutRate = 0.6
 		, min = 0
@@ -345,9 +345,34 @@ chartme.bar = function(data) {
 		, guideline
 		, xScale
 		, yScale
+		, colorScale
 		, bar
 		;
 
+	function render(data, yProperty) {
+
+		var bars = svg.select(".bars").selectAll(".bar" + yProperty)
+			.data(data);
+
+		bars.enter().append("rect")
+			.attr("class", "bar" + yProperty)
+			.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
+			.attr("width", xScale.rangeBand())
+			.attr("y", function (d, i) { return yScale(d[yProperty]); })
+			.attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
+			.attr("x", function (d, i) { return xScale(i); })
+			.each(function (d) { this.__data__.chart = chart; })
+			;
+
+		bars.transition()
+			.duration(300)
+			.attr("y", function (d, i) { return yScale(d[yProperty]); })
+			.attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
+			.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
+			;
+
+		bars.exit().remove();
+	}
 
 	function chart(selection) {
 		// width = width - margin.left - margin.right;
@@ -372,7 +397,7 @@ chartme.bar = function(data) {
 			// 	.domain(d3.extent(data, function (d) { return d[xProperty]; }))
 			// 	.range([0, width]);
 
-			var colorScale = d3.scale.linear()
+			colorScale = d3.scale.linear()
 				.range(colors);
 
 
@@ -442,7 +467,12 @@ chartme.bar = function(data) {
 					d[yProperty] = +d[yProperty];
 				});
 
-				yMax = d3.max(data.map(function (d) { return d[yProperty]; }));
+				yMax = d3.max(data.map(function (d) {
+					return d[yProperty[0]] + d[yProperty[1]];
+					return yProperty.reduce(function (a, b) {
+						return d[a] + d[b];
+					});
+				}));
 
 				var xValues = data.map(function (d) { return d[xProperty]; });
 
@@ -460,27 +490,10 @@ chartme.bar = function(data) {
 
 				updateAxis();
 
-				var bars = svg.select(".bars").selectAll(".bar")
-					.data(data);
-
-				bars.enter().append("rect")
-					.attr("class", "bar")
-					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
-					.attr("width", xScale.rangeBand())
-					.attr("y", function (d, i) { return yScale(d[yProperty]); })
-					.attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
-					.attr("x", function (d, i) { return xScale(i); })
-					.each(function (d) { this.__data__.chart = chart; })
-					;
-
-				bars.transition()
-					.duration(300)
-					.attr("y", function (d, i) { return yScale(d[yProperty]); })
-					.attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
-					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
-					;
-
-				bars.exit().remove();
+				yProperty.forEach(function (value) {
+					console.log("y:"+ value);
+					render(data, value);
+				});
 
 
 						// var transition = svg.transition().duration(750),
@@ -527,7 +540,7 @@ chartme.bar = function(data) {
 
 	chart.y = function (value) {
 		if (!arguments.length) return yProperty;
-		yProperty = value;
+		yProperty = value.forEach ? value : [value];
 		return chart;
 	};
 
@@ -738,7 +751,10 @@ if ($) {
 
 				var doWithChart = {
 					  'bar' : function (chart) {
-						chart.x(0).y(1);
+						chart.x(0).y(chartData.stack ? [1,2] : 1);
+						// if (chartData.stack) {
+						// chart.stack().colors().y(2);
+						// }
 					}
 					, 'donut' : function () {
 						chart.label(0).value(1);

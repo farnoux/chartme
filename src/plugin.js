@@ -12,7 +12,10 @@ if ($) {
 
 				var doWithChart = {
 					  'bar' : function (chart) {
-						chart.x(0).y(1);
+						chart.x(0).y(chartData.stack ? [1,2] : 1);
+						// if (chartData.stack) {
+						// chart.stack().colors().y(2);
+						// }
 					}
 					, 'donut' : function () {
 						chart.label(0).value(1);
