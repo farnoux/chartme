@@ -350,16 +350,20 @@ chartme.bar = function(data) {
 
 
 	function chart(selection) {
-		width = width - margin.left - margin.right;
-		height = height - margin.top - margin.bottom;
+		// width = width - margin.left - margin.right;
+		// height = height - margin.top - margin.bottom;
 
 		selection.each(function (d, i) {
 
 			xScale = d3.scale.ordinal()
-				.rangeRoundBands([0, width], 0.15);
+				.rangeBands([0, width - margin.left - margin.right], 0.15);
+
+			var xAxisScale = d3.time.scale()
+				.range([0, (width - margin.left - margin.right) -10 ])
+				;
 
 			yScale = d3.scale.linear()
-				.range([height, 0])
+				.range([height - margin.top - margin.bottom, 0])
 				.nice()
 				;
 
@@ -373,10 +377,11 @@ chartme.bar = function(data) {
 
 
 			var xAxis = d3.svg.axis()
-				.scale(xScale)
+				.scale(xAxisScale)
 				.orient("bottom")
-				// .ticks(0)
-				.tickSize(10)
+				// .ticks(6)
+				// .ticks(xAxisScale.ticks(d3.time.days, 1))
+				.tickSize(20)
 				.tickFormat(function (d) { return xOutputFormat(d); })
 				;
 
@@ -384,31 +389,41 @@ chartme.bar = function(data) {
 				.scale(yScale)
 				.orient("right")
 				.ticks(4)
-				.tickSize(width + margin.left + margin.right)
+				.tickSize(width)
 				.tickSubdivide(true)
 				;
 
 			svg = d3.select(this).append("svg")
-				.datum(data)
-					.attr("width", width + margin.left + margin.right)
-					.attr("height", height + margin.top + margin. bottom)
+				// .datum(data)
+					.attr("width", width)
+					.attr("height", height)
 					;
 
-			svg = svg.append("g")
-				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			svg.append("g")
+				.attr("class", "bars")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+				.attr("width", width - margin.left - margin.right)
+				.attr("height", height - margin.top - margin.bottom)
+				;
 
 			function updateAxis() {
 				// Add x axis.
 				svg.append("g")
 					.attr("class", "x axis")
-					.attr("transform", "translate(" + '0' + "," + height + ")")
+					.attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
 					.call(xAxis)
+					;
+
+				svg.selectAll(".x.axis text")
+					.attr("y", 10)
+					.attr("text-anchor", "start")
+					.attr("dx", 4)
 					;
 
 				// Add y axis.
 				svg.append("g")
 					.attr("class", "y axis")
-					.attr("transform", "translate(" + '0' + "," + margin.top + ")")
+					.attr("transform", "translate(" + 0 + "," + margin.top + ")")
 					.call(yAxis);
 
 				// Position y axis labels.
@@ -429,17 +444,23 @@ chartme.bar = function(data) {
 
 				yMax = d3.max(data.map(function (d) { return d[yProperty]; }));
 
+				var xValues = data.map(function (d) { return d[xProperty]; });
 
 				// xScale.domain(d3.range(0, data.length));
 				// console.log(data.map(function (d) { return d[xProperty]; }));
-				xScale.domain(data.map(function (d) { return d[xProperty]; }));
+				xScale.domain(xValues);
+				// xAxisScale.domain(xValues.filter(function (d, i) { return i % 4; }));
+				xAxisScale.domain(d3.extent(xValues));
+				// xAxisScale.domain(xValues);
+
 				yScale.domain([0, yMax]);
 				colorScale.domain([min, yMax]);
+
 				// xTimeScale.domain(d3.extent(data, function (d) { return d[xProperty]; }));
 
 				updateAxis();
 
-				var bars = svg.selectAll(".bar")
+				var bars = svg.select(".bars").selectAll(".bar")
 					.data(data);
 
 				bars.enter().append("rect")
@@ -447,7 +468,7 @@ chartme.bar = function(data) {
 					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
 					.attr("width", xScale.rangeBand())
 					.attr("y", function (d, i) { return yScale(d[yProperty]); })
-					.attr("height", function (d) { return height - yScale(d[yProperty]) + 4; })
+					.attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
 					.attr("x", function (d, i) { return xScale(i); })
 					.each(function (d) { this.__data__.chart = chart; })
 					;
@@ -455,7 +476,7 @@ chartme.bar = function(data) {
 				bars.transition()
 					.duration(300)
 					.attr("y", function (d, i) { return yScale(d[yProperty]); })
-					.attr("height", function (d) { return height - yScale(d[yProperty]) + 4; })
+					.attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
 					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
 					;
 
