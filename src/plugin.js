@@ -17,6 +17,9 @@ if ($) {
 					, 'donut' : function () {
 						chart.label(0).value(1);
 					}
+					, 'hbar' : function (chart) {
+						chart.x(0).y(1);
+					}
 				};
 
 				doWithChart[chartData.type](chart);

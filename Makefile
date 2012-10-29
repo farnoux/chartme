@@ -4,6 +4,7 @@ JS_FILES = \
 	src/donut.js \
 	src/line.js \
 	src/bar.js \
+	src/hbar.js \
 	src/plugin.js \
 	src/end.js
 
