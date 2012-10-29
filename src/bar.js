@@ -5,13 +5,14 @@ chartme.bar = function(data) {
 		, width  = 600
 		, height = 300
 		, colors = ["#ecf0d1", "#afc331"]
-		, dateFormat = '%Y%m%d'
+		, xInputFormat = d3.time.format("%Y%m%d")
+		, xOutputFormat = d3.time.format("%d-%m-%Y")
 		, xProperty = 'x'
 		, yProperty = 'y'
 		, radius = 150
 		, donutRate = 0.6
 		, min = 0
-		, max
+		, yMax
 		, svg
 		, guideline
 		, xScale
@@ -24,9 +25,6 @@ chartme.bar = function(data) {
 		width = width - margin.left - margin.right;
 		height = height - margin.top - margin.bottom;
 
-		var inputDateFormat = d3.time.format(dateFormat);
-		var outputDateFormat = d3.time.format('%d-%m-%Y');
-
 		selection.each(function (d, i) {
 
 			xScale = d3.scale.ordinal()
@@ -38,27 +36,28 @@ chartme.bar = function(data) {
 				;
 
 
-			var xTimeScale = d3.time.scale()
-				.domain(d3.extent(data, function (d) { return d[xProperty]; }))
-				.range([0, width]);
+			// var xTimeScale = d3.time.scale()
+			// 	.domain(d3.extent(data, function (d) { return d[xProperty]; }))
+			// 	.range([0, width]);
 
 			var colorScale = d3.scale.linear()
 				.range(colors);
 
 
 			var xAxis = d3.svg.axis()
-				.scale(xTimeScale)
+				.scale(xScale)
 				.orient("bottom")
-				.ticks(6)
-				.tickFormat(outputDateFormat)
+				// .ticks(0)
+				.tickSize(10)
+				.tickFormat(function (d) { return xOutputFormat(d); })
 				;
 
 			var yAxis = d3.svg.axis()
 				.scale(yScale)
+				.orient("right")
 				.ticks(4)
 				.tickSize(width + margin.left + margin.right)
 				.tickSubdivide(true)
-				.orient("right")
 				;
 
 			svg = d3.select(this).append("svg")
@@ -67,36 +66,28 @@ chartme.bar = function(data) {
 					.attr("height", height + margin.top + margin. bottom)
 					;
 
-			// Add x axis.
-			svg.append("g")
-				.attr("class", "x axis")
-				.attr("transform", "translate(" + '0' + "," + (height + margin.top) + ")")
-				.call(xAxis);
-
-			// Add y axis.
-			svg.append("g")
-				.attr("class", "y axis")
-				.attr("transform", "translate(" + '0' + "," + margin.top + ")")
-				.call(yAxis);
-
-			svg.selectAll(".y.axis text")
-				.attr("x", 0)
-				.attr("dy", -2);
-
 			svg = svg.append("g")
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+			function updateAxis() {
+				// Add x axis.
+				svg.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(" + '0' + "," + height + ")")
+					.call(xAxis)
+					;
 
+				// Add y axis.
+				svg.append("g")
+					.attr("class", "y axis")
+					.attr("transform", "translate(" + '0' + "," + margin.top + ")")
+					.call(yAxis);
 
-			// see http://stackoverflow.com/questions/10727892/how-to-center-the-bootstrap-tooltip-on-an-svg
-			$("svg .bar").tooltip({
-				  html: true
-				, title: function () {
-					var d = this.__data__;
-					return '<b>' + d[yProperty] + '</b><br>' + outputDateFormat(d[xProperty]);
-				}
-			});
-
+				// Position y axis labels.
+				svg.selectAll(".y.axis text")
+					.attr("x", 0)
+					.attr("dy", -2);
+			}
 
 			chart.update = function update (data) {
 				if (!data) {
@@ -104,15 +95,21 @@ chartme.bar = function(data) {
 				}
 
 				data.forEach(function (d) {
-					d[xProperty] = inputDateFormat.parse(d[xProperty]);
+					d[xProperty] = xInputFormat.parse(d[xProperty]);
 					d[yProperty] = +d[yProperty];
 				});
 
-				max = d3.max(data.map(function (d) { return d[yProperty]; }));
+				yMax = d3.max(data.map(function (d) { return d[yProperty]; }));
 
-				xScale.domain(d3.range(0, data.length));
-				yScale.domain([0, max]);
-				colorScale.domain([min, max]);
+
+				// xScale.domain(d3.range(0, data.length));
+				// console.log(data.map(function (d) { return d[xProperty]; }));
+				xScale.domain(data.map(function (d) { return d[xProperty]; }));
+				yScale.domain([0, yMax]);
+				colorScale.domain([min, yMax]);
+				// xTimeScale.domain(d3.extent(data, function (d) { return d[xProperty]; }));
+
+				updateAxis();
 
 				var bars = svg.selectAll(".bar")
 					.data(data);
@@ -124,6 +121,7 @@ chartme.bar = function(data) {
 					.attr("y", function (d, i) { return yScale(d[yProperty]); })
 					.attr("height", function (d) { return height - yScale(d[yProperty]) + 4; })
 					.attr("x", function (d, i) { return xScale(i); })
+					.each(function (d) { this.__data__.chart = chart; })
 					;
 
 				bars.transition()
@@ -134,6 +132,19 @@ chartme.bar = function(data) {
 					;
 
 				bars.exit().remove();
+
+
+						// var transition = svg.transition().duration(750),
+		// 		delay = function(d, i) { return i * 50; };
+
+		// transition.selectAll(".bar")
+		// 		.delay(delay)
+		// 		.attr("x", function(d) { return x0(d.letter); });
+
+		// transition.select(".x.axis")
+		// 		.call(xAxis)
+		// 	.selectAll("g")
+		// 		.delay(delay);
 			};
 
 			chart.update(data);
@@ -171,9 +182,15 @@ chartme.bar = function(data) {
 		return chart;
 	};
 
-	chart.dateFormat = function (value) {
-		if (!arguments.length) return dateFormat;
-		dateFormat = value;
+	chart.xInputFormat = function (value) {
+		if (!arguments.length) return xInputFormat;
+		xInputFormat = value;
+		return chart;
+	};
+
+	chart.xOutputFormat = function (value) {
+		if (!arguments.length) return xOutputFormat;
+		xOutputFormat = value;
 		return chart;
 	};
 

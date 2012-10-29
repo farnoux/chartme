@@ -6,15 +6,15 @@ if ($) {
 					  $this = $(this)
 					, chartData = $this.data('chart');
 
-				var chart = chartme[chartData.type](chartData.data)
+				var chart = chartme[chartData.type](chartData.data || [])
 					.width($this.width())
 					.height($this.height());
 
 				var doWithChart = {
-					'bar' : function (chart) {
-						chart.dateFormat('%Y%m%d').x(0).y(1);
-					},
-					'donut' : function () {
+					  'bar' : function (chart) {
+						chart.x(0).y(1);
+					}
+					, 'donut' : function () {
 						chart.label(0).value(1);
 					}
 				};
