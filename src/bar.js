@@ -4,7 +4,7 @@ chartme.bar = function(data) {
 			margin = { top: 20, right: 20, bottom: 20, left: 20 }
 		, width  = 600
 		, height = 300
-		, colors = ["#ecf0d1", "#afc331"]
+		, colors = ["#ecf0d1", "#afc331", "#e6cfec", "#9632b1"]
 		, xInputFormat = d3.time.format("%Y%m%d")
 		, xOutputFormat = d3.time.format("%d-%m-%Y")
 		, xProperty = 'x'
@@ -14,33 +14,50 @@ chartme.bar = function(data) {
 		, min = 0
 		, yMax
 		, svg
+		, vis
 		, guideline
 		, xScale
 		, yScale
 		, colorScale
 		, bar
+		, stack
+		// , y = function (d, i) { return yScale(d[yProperty]); }
+		, y0 = function (d) { return height - d.y0 * height / yMax; }
+		, y1 = function (d) { return height - (d.y + d.y0) * height / yMax; }
 		;
 
-	function render(data, yProperty) {
+	function render(data) {
+		console.log(data);
+		data = stack(data);
+		console.log(data);
+		return;
 
-		var bars = svg.select(".bars").selectAll(".bar" + yProperty)
+		var layers = vis.selectAll("g.layer")
+			.data(data)
+		.enter().append("g")
+			.style("fill", function(d, i) { return colors[i]; })
+			.attr("class", "layer");
+
+		var bars = layers.selectAll(".bar")
 			.data(data);
 
 		bars.enter().append("rect")
-			.attr("class", "bar" + yProperty)
-			.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
+			.attr("class", "bar")
+			.attr("fill", colorScale(0))
 			.attr("width", xScale.rangeBand())
-			.attr("y", function (d, i) { return yScale(d[yProperty]); })
-			.attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
+			.attr("y", yScale(0))
+			.attr("height", 0)
 			.attr("x", function (d, i) { return xScale(i); })
 			.each(function (d) { this.__data__.chart = chart; })
 			;
 
 		bars.transition()
-			.duration(300)
-			.attr("y", function (d, i) { return yScale(d[yProperty]); })
-			.attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
-			.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
+			// .duration(1300)
+			.duration(function (d, i) { return i * 200; })
+			.attr("y", y1)
+			.attr("height", function(d) { return y0(d) - y1(d); })
+			// .attr("height", function (d) { return height - margin.top - margin.bottom - yScale(d[yProperty]) + 4; })
+			.attr('fill', function (d, i) { return colorScale(i); })
 			;
 
 		bars.exit().remove();
@@ -51,6 +68,14 @@ chartme.bar = function(data) {
 		// height = height - margin.top - margin.bottom;
 
 		selection.each(function (d, i) {
+
+			stack = d3.layout.stack()
+				.x(function (d) { return d[xProperty]; })
+				.y(function (d) { return d[xProperty]; })
+				.out(function (x, y, y0) {
+
+				})
+				;
 
 			xScale = d3.scale.ordinal()
 				.rangeBands([0, width - margin.left - margin.right], 0.15);
@@ -96,8 +121,8 @@ chartme.bar = function(data) {
 					.attr("height", height)
 					;
 
-			svg.append("g")
-				.attr("class", "bars")
+			vis = svg.append("g")
+				.attr("class", "vis")
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 				.attr("width", width - margin.left - margin.right)
 				.attr("height", height - margin.top - margin.bottom)
@@ -139,12 +164,9 @@ chartme.bar = function(data) {
 					d[yProperty] = +d[yProperty];
 				});
 
-				yMax = d3.max(data.map(function (d) {
+				yMax = d3.max(data, function (d) {
 					return d[yProperty[0]] + d[yProperty[1]];
-					return yProperty.reduce(function (a, b) {
-						return d[a] + d[b];
-					});
-				}));
+				});
 
 				var xValues = data.map(function (d) { return d[xProperty]; });
 
@@ -158,14 +180,15 @@ chartme.bar = function(data) {
 				yScale.domain([0, yMax]);
 				colorScale.domain([min, yMax]);
 
+
+
 				// xTimeScale.domain(d3.extent(data, function (d) { return d[xProperty]; }));
 
-				updateAxis();
+				// updateAxis();
 
-				yProperty.forEach(function (value) {
-					console.log("y:"+ value);
-					render(data, value);
-				});
+				// yProperty.forEach(function (value) {
+				render(data);
+				// });
 
 
 						// var transition = svg.transition().duration(750),
