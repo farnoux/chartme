@@ -173,8 +173,11 @@
 			, title: function () {
 				var d = this.__data__
 					, chart = d.chart;
-				return '<b>' + d[1] + '</b><br>';
-				return '<b>' + d[1] + '</b><br>' + chart.xOutputFormat()(d[0]);
+
+				var date = d3.time.format("%Y%m%d").parse(d[0]);
+				date = d3.time.format("%d-%m-%Y")(date);
+				return '<b class="lead">' + d[1] + '</b><br>' + date;
+				// return '<b>' + d[1] + '</b><br>' + chart.xOutputFormat()(d[0]);
 			}
 		});
 

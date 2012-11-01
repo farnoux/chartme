@@ -413,6 +413,16 @@ chartme.bar = function(data) {
 			.attr("height", visHeight)
 			;
 
+		svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(" + margin.left + "," + (height - margin.top) + ")")
+			;
+
+		svg.append("g")
+			.attr("class", "y axis")
+			.attr("transform", "translate(" + 0 + "," + margin.top + ")")
+			;
+
 		chart.update(data);
 	}
 
@@ -425,11 +435,11 @@ chartme.bar = function(data) {
 				return d;
 			})
 		.enter().append("g")
+			.attr("class", "layer")
 			.style("fill", function (d, i) {
 				return colorScale.range(colors[i])(yMax * 0.75);
 				// return colors[i+1];
 			})
-			.attr("class", "layer")
 			;
 
 		var bars = layers.selectAll(".bar")
@@ -459,7 +469,7 @@ chartme.bar = function(data) {
 		bars.exit().remove();
 	}
 
-	function renderAxis() {
+	function renderAxis(data) {
 		// Add x axis.
 		// svg.append("g")
 		// 	.attr("class", "x axis")
@@ -472,12 +482,46 @@ chartme.bar = function(data) {
 		// 	.attr("text-anchor", "start")
 		// 	.attr("dx", 4)
 		// 	;
+		var xAxis
+			, x
+			, xTick
+			;
+
+		// Add x axis.
+		xAxis = svg.select(".x.axis")
+			.selectAll("g")
+			.data(data[0])
+			;
+
+		x = function (d, i) { return xScale(i) + xScale.rangeBand() * 0.5; };
+
+		xTick = xAxis.enter().append("g")
+			;
+
+		xTick.append("line")
+			.attr("class", "tick")
+			.attr("x1", x)
+			.attr("x2", x)
+			.attr("y1", -10)
+			.attr("y2", 10)
+			;
+
+		xTick.append("text")
+			.attr("x", x)
+			.attr("dy", 16)
+			.attr("text-anchor", "middle")
+			.text(function (d) {
+				return d[xProperty];
+			})
+			;
 
 		// Add y axis.
-		svg.append("g")
-			.attr("class", "y axis")
-			.attr("transform", "translate(" + 0 + "," + margin.top + ")")
-			.call(yAxis);
+		svg.select(".y.axis")
+			// .transition()
+				// .delay(1000)
+				// .duration(300)
+				.call(yAxis)
+				;
 
 		// Position y axis labels.
 		svg.selectAll(".y.axis text")
@@ -485,13 +529,12 @@ chartme.bar = function(data) {
 			.attr("dy", -2)
 			;
 
-
 		// var transition = svg.transition().duration(750),
 		// 		delay = function(d, i) { return i * 50; };
 
 		// transition.selectAll(".bar")
 		// 		.delay(delay)
-		// 		.attr("x", function(d) { return x0(d.letter); });
+		// 		.attr("x", function (d) { return x0(d.letter); });
 
 		// transition.select(".x.axis")
 		// 		.call(xAxis)
