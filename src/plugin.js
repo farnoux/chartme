@@ -6,7 +6,7 @@ if ($) {
 					  $this = $(this)
 					, chartData = $this.data('chart');
 
-				var chart = chartme[chartData.type](chartData.data || [])
+				var chart = chartme[chartData.type]()
 					.width($this.width())
 					.height($this.height());
 
@@ -28,6 +28,10 @@ if ($) {
 				doWithChart[chartData.type](chart);
 
 				d3.select(this[0]).call(chart);
+
+				if(chartData.data) {
+					chart.update(chartData.data);
+				}
 				return chart;
 		// });
 	};

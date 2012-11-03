@@ -1,5 +1,5 @@
 /*global chartme:true, d3:true*/
-chartme.bar = function(data) {
+chartme.bar = function() {
 
 	var
 			margin = { top: 20, right: 20, bottom: 20, left: 20 }
@@ -94,25 +94,24 @@ chartme.bar = function(data) {
 			.attr("width", visWidth)
 			.attr("height", visHeight)
 			;
-
-		chart.update(data);
 	}
 
 
 	function renderChart(data) {
 
 		var layers = vis.selectAll("g.layer")
-			.data(data, function (d, i) {
-				// d.colorScale = colorScale.copy().range(colors[i]);
-				return d;
-			})
-		.enter().append("g")
+			.data(data)
+			;
+
+		layers.enter().append("g")
 			.attr("class", "layer")
 			.style("fill", function (d, i) {
 				return colorScale.range(colors[i])(yMax * 0.75);
 				// return colors[i+1];
 			})
 			;
+
+		layers.exit().remove();
 
 		var bars = layers.selectAll(".bar")
 			.data(function (d) { return d; });
@@ -126,7 +125,7 @@ chartme.bar = function(data) {
 			.attr("y", yScale(0))
 			.attr("height", 0)
 			.attr("x", function (d, i) { return xScale(i); })
-			.each(function () { this.__data__.chart = chart; })
+			// .each(function () { this.__data__.chart = chart; })
 			;
 
 		bars.transition()
