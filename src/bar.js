@@ -78,13 +78,6 @@ chartme.bar = function(data) {
 				.attr("height", height)
 				;
 
-		vis = svg.append("g")
-			.attr("class", "vis")
-			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-			.attr("width", visWidth)
-			.attr("height", visHeight)
-			;
-
 		svg.append("g")
 			.attr("class", "x axis")
 			.attr("transform", "translate(" + margin.left + "," + (height - margin.top) + ")")
@@ -93,6 +86,13 @@ chartme.bar = function(data) {
 		svg.append("g")
 			.attr("class", "y axis")
 			.attr("transform", "translate(" + 0 + "," + margin.top + ")")
+			;
+
+		vis = svg.append("g")
+			.attr("class", "vis")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			.attr("width", visWidth)
+			.attr("height", visHeight)
 			;
 
 		chart.update(data);
@@ -182,9 +182,7 @@ chartme.bar = function(data) {
 			.attr("x", x)
 			.attr("dy", 16)
 			.attr("text-anchor", "middle")
-			.text(function (d) {
-				return d[xProperty];
-			})
+			.text(function (d) { return d[xProperty]; })
 			;
 
 		// Add y axis.
