@@ -78,7 +78,9 @@
 </head>
 <body>
 
-	<div class="chart bar" data-chart='{"type":"bar","stack":true,"data":[[["20121001",9],["20121002",2],["20121003",12],["20121004",11],["20121005",0],["20121006",2]], [["20121001",4],["20121002",5],["20121003",3],["20121004",9],["20121005",3],["20121006",1]]]}'></div>
+	<div class="chart bar" data-chart='{"type":"bar"}'></div>
+
+	<div class="chart hbar" data-chart='{"type":"hbar"}'></div>
 <!--
 	<div class="chart" data-chart='{"type":"bar","stack":true,"data":[["20121001","9","4"],["20121002","2","5"],["20121003","12","3"],["20121004","11","9"],["20121005",0,3],["20121006",2,0]]}'></div>
  -->
@@ -146,6 +148,7 @@
 
 
 		//
+		var stackData0 = [[["20121001",9],["20121002",2],["20121003",12],["20121004",11],["20121005",0],["20121006",2]], [["20121001",4],["20121002",5],["20121003",3],["20121004",9],["20121005",3],["20121006",1]]];
 
 		var stackData = [
 			[
@@ -156,7 +159,11 @@
 				]
 		];
 
-		var barChart = $(".chart.bar").chartme();
+
+		var barChart = $(".chart.bar").chartme()
+			.update(stackData0);
+		var hBarChart = $(".chart.hbar").chartme()
+			.update(stackData0);
 
 
 
@@ -165,6 +172,7 @@
 			// donut.update(data);
 			// bar.update(data);
 			barChart.update(stackData);
+			hBarChart.update(stackData);
 		});
 
 

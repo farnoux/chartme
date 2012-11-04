@@ -1,5 +1,5 @@
 /*global chartme:true, d3:true*/
-chartme.bar = function() {
+chartme.bar = function () {
 
 	var
 			margin = { top: 20, right: 20, bottom: 20, left: 20 }
@@ -214,7 +214,7 @@ chartme.bar = function() {
 
 	chart.update = function (data) {
 		if (!data) {
-			return;
+			return chart;
 		}
 
 		// data.forEach(function (d) {
@@ -238,6 +238,8 @@ chartme.bar = function() {
 		// Render chart and axis.
 		renderChart(data);
 		renderAxis(data);
+
+		return chart;
 	};
 
 

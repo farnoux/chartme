@@ -327,7 +327,7 @@ chartme.line = function(data) {
 	return chart;
 };
 /*global chartme:true, d3:true*/
-chartme.bar = function() {
+chartme.bar = function () {
 
 	var
 			margin = { top: 20, right: 20, bottom: 20, left: 20 }
@@ -542,7 +542,7 @@ chartme.bar = function() {
 
 	chart.update = function (data) {
 		if (!data) {
-			return;
+			return chart;
 		}
 
 		// data.forEach(function (d) {
@@ -566,6 +566,8 @@ chartme.bar = function() {
 		// Render chart and axis.
 		renderChart(data);
 		renderAxis(data);
+
+		return chart;
 	};
 
 
@@ -612,156 +614,207 @@ chartme.bar = function() {
 	};
 
 	return chart;
-};chartme.hbar = function(data) {
+};/*global chartme:true, d3:true*/
+chartme.hbar = function () {
 
 	var
 			margin = { top: 20, right: 20, bottom: 20, left: 20 }
 		, width  = 600
 		, height = 300
-		, colors = ["#ecf0d1", "#afc331"]
-		, dateFormat = '%Y%m%d'
+		, visWidth
+		, visHeight
+		, colors = [["#ecf0d1", "#afc331"], ["#e6cfec", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
+		// , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
+		, xInputFormat = d3.time.format("%Y%m%d")
+		, xOutputFormat = d3.time.format("%d-%m-%Y")
 		, xProperty = 'x'
 		, yProperty = 'y'
-		, radius = 150
-		, donutRate = 0.6
-		, min = 0
-		, max
+		, yMax
 		, svg
-		, guideline
+		, vis
+		, xAxis
+		, yAxis
 		, xScale
 		, yScale
-		, bar
+		, colorScale = d3.scale.linear()
+		, stackLayout
+		, y0 = function (d) { return yScale(d.y0) ; }
+		, y1 = function (d) { return yScale(d.y + d.y0) ; }
 		;
 
 
-	function chart(selection) {
-		width = width - margin.left - margin.right;
-		height = height - margin.top - margin.bottom;
+	function init() {
+		// Init metrics.
+		visWidth  = width - margin.left - margin.right;
+		visHeight = height - margin.top - margin.bottom;
 
-		var inputDateFormat = d3.time.format(dateFormat);
-		var outputDateFormat = d3.time.format('%d-%m-%Y');
+		// Init scales.
+		xScale = d3.scale.ordinal()
+			.rangeBands([0, visHeight], 0.15);
 
-		selection.each(function (d, i) {
+		yScale = d3.scale.linear()
+			.range([visWidth, 0])
+			;
 
-			xScale = d3.scale.ordinal()
-				.rangeRoundBands([0, width], 0.15);
+		// Init layout.
+		stackLayout = d3.layout.stack()
+			.x(function (d) { return d[xProperty]; })
+			.y(function (d) { return d[yProperty]; })
+			;
 
-			yScale = d3.scale.linear()
-				.range([height, 0])
-				.nice()
-				;
-
-
-			var xTimeScale = d3.time.scale()
-				.domain(d3.extent(data, function (d) { return d[xProperty]; }))
-				.range([0, width]);
-
-			var colorScale = d3.scale.linear()
-				.range(colors);
-
-
-			var xAxis = d3.svg.axis()
-				.scale(xTimeScale)
-				.orient("bottom")
-				.ticks(6)
-				.tickFormat(outputDateFormat)
-				;
-
-			var yAxis = d3.svg.axis()
-				.scale(yScale)
-				.ticks(4)
-				.tickSize(width + margin.left + margin.right)
-				.tickSubdivide(true)
-				.orient("right")
-				;
-
-			svg = d3.select(this).append("svg")
-				.datum(data)
-					.attr("width", width + margin.left + margin.right)
-					.attr("height", height + margin.top + margin. bottom)
-					;
-
-			// Add x axis.
-			svg.append("g")
-				.attr("class", "x axis")
-				.attr("transform", "translate(" + '0' + "," + (height + margin.top) + ")")
-				.call(xAxis);
-
-			// Add y axis.
-			svg.append("g")
-				.attr("class", "y axis")
-				.attr("transform", "translate(" + '0' + "," + margin.top + ")")
-				.call(yAxis);
-
-			svg.selectAll(".y.axis text")
-				.attr("x", 0)
-				.attr("dy", -2);
-
-			svg = svg.append("g")
-				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-
-			// see http://stackoverflow.com/questions/10727892/how-to-center-the-bootstrap-tooltip-on-an-svg
-			$("svg .bar").tooltip({
-				  html: true
-				, title: function () {
-					var d = this.__data__;
-					return '<b>' + d[yProperty] + '</b><br>' + outputDateFormat(d[xProperty]);
-				}
-			});
-
-
-			chart.update = function update (data) {
-				if (!data) {
-					return;
-				}
-
-				data.forEach(function (d) {
-					d[xProperty] = inputDateFormat.parse(d[xProperty]);
-					d[yProperty] = +d[yProperty];
-				});
-
-				max = d3.max(data.map(function (d) { return d[yProperty]; }));
-
-				xScale.domain(d3.range(0, data.length));
-				yScale.domain([0, max]);
-				colorScale.domain([min, max]);
-
-				var bars = svg.selectAll(".bar")
-					.data(data);
-
-				bars.enter().append("rect")
-					.attr("class", "bar")
-					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
-					.attr("width", xScale.rangeBand())
-					.attr("y", function (d, i) { return yScale(d[yProperty]); })
-					.attr("height", function (d) { return height - yScale(d[yProperty]) + 4; })
-					.attr("x", function (d, i) { return xScale(i); })
-					;
-
-				bars.transition()
-					.duration(300)
-					.attr("y", function (d, i) { return yScale(d[yProperty]); })
-					.attr("height", function (d) { return height - yScale(d[yProperty]) + 4; })
-					.attr('fill', function (d, i) { return colorScale(d[yProperty]); })
-					;
-
-				bars.exit().remove();
-			};
-
-			chart.update(data);
-
-		});
+		// Init axis.
+		yAxis = d3.svg.axis()
+			.scale(yScale)
+			.orient("bottom")
+			.ticks(4)
+			.tickSize(visHeight)
+			.tickSubdivide(true)
+			;
 	}
 
-	chart.width = function(value) {
+	function chart() {
+		init();
+
+		svg = this.append("svg")
+				.attr("width", width)
+				.attr("height", height)
+				;
+
+		svg.append("g")
+			.attr("class", "y axis")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			;
+
+		vis = svg.append("g")
+			.attr("class", "vis")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			.attr("width", visWidth)
+			.attr("height", visHeight)
+			;
+
+		svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			;
+	}
+
+
+	function renderChart(data) {
+
+		var layers = vis.selectAll("g.layer")
+			.data(data)
+			;
+
+		layers.enter().append("g")
+			.attr("class", "layer")
+			.style("fill", function (d, i) {
+				return colorScale.range(colors[i])(yMax * 0.75);
+				// return colors[i+1];
+			})
+			;
+
+		layers.exit().remove();
+
+		var bars = layers.selectAll(".bar")
+			.data(function (d) { return d; });
+
+		bars.enter().append("rect")
+			.attr("class", "bar")
+			.attr("height", xScale.rangeBand())
+			.attr("x", 0)
+			.attr("width", 0)
+			.attr("y", function (d, i) { return xScale(i); })
+			;
+
+		bars.transition()
+			.duration(function (d, i) { return (i+1) * 100; })
+			.attr("x", y0)
+			.attr("width", function (d) { return y1(d) - y0(d); })
+			;
+
+		bars.exit().remove();
+	}
+
+	function renderAxis(data) {
+		// Add x axis.
+		var xAxis
+			, x
+			, xTick
+			;
+
+		// Add x axis.
+		xAxis = svg.select(".x.axis")
+			.selectAll("g")
+			.data(data[0])
+			;
+
+		x = function (d, i) { return xScale(i) + xScale.rangeBand() * 0.5; };
+
+		xTick = xAxis.enter().append("g")
+			;
+
+		// xTick.append("line")
+		// 	.attr("class", "tick")
+		// 	.attr("y1", x)
+		// 	.attr("y2", x)
+		// 	.attr("x1", -10)
+		// 	.attr("x2", 10)
+		// 	;
+
+		xTick.append("text")
+			.attr("y", x)
+			.attr("dx", 4)
+			.attr("dy", 4)
+			.attr("text-anchor", "left")
+			.text(function (d) { return d[xProperty]; })
+			;
+
+		// Add y axis.
+		svg.select(".y.axis")
+			.call(yAxis)
+			;
+
+		// Position y axis labels.
+		svg.selectAll(".y.axis text")
+			.attr("y", 0)
+			.attr("dy", -5)
+			;
+	}
+
+
+	chart.update = function (data) {
+		if (!data) {
+			return chart;
+		}
+
+		data = stackLayout(data);
+
+		yMax = d3.max(data, function (d) {
+			return d3.max(d, function (d) {
+				return d.y + d.y0;
+			});
+		});
+
+		// Update domain scales with the new data.
+		xScale.domain(d3.range(0, data[0].length));
+		yScale.domain([yMax, 0]);
+		colorScale.domain([0, yMax]);
+
+		// Render chart and axis.
+		renderChart(data);
+		renderAxis(data);
+
+		return chart;
+	};
+
+
+	chart.width = function (value) {
 		if (!arguments.length) return width;
 		width = value ? value : width;
 		return chart;
 	};
 
-	chart.height = function(value) {
+	chart.height = function (value) {
 		if (!arguments.length) return height;
 		height = value ? value : height;
 		return chart;
@@ -785,9 +838,15 @@ chartme.bar = function() {
 		return chart;
 	};
 
-	chart.dateFormat = function (value) {
-		if (!arguments.length) return dateFormat;
-		dateFormat = value;
+	chart.xInputFormat = function (value) {
+		if (!arguments.length) return xInputFormat;
+		xInputFormat = value;
+		return chart;
+	};
+
+	chart.xOutputFormat = function (value) {
+		if (!arguments.length) return xOutputFormat;
+		xOutputFormat = value;
 		return chart;
 	};
 
