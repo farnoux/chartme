@@ -129,7 +129,7 @@ chartme.bar = function () {
 			;
 
 		bars.transition()
-			.duration(function (d, i) { return (i+1) * 100; })
+			.duration(300)
 			.attr("y", y1)
 			.attr("height", function (d) { return y0(d) - y1(d); })
 			// .attr('fill', function (d, i) {
@@ -156,15 +156,23 @@ chartme.bar = function () {
 		var xAxis
 			, x
 			, xTick
+			, maxTick = 8
+			, axisData = data[0]
+			, tickEachIndex = 1
 			;
+
+		if (axisData.length > maxTick) {
+			tickEachIndex = Math.ceil(axisData.length / maxTick);
+			axisData = axisData.filter(function (d, i) { return !(i % tickEachIndex); });
+		}
 
 		// Add x axis.
 		xAxis = svg.select(".x.axis")
 			.selectAll("g")
-			.data(data[0])
+			.data(axisData)
 			;
 
-		x = function (d, i) { return xScale(i) + xScale.rangeBand() * 0.5; };
+		x = function (d, i) { return xScale(i * tickEachIndex) + xScale.rangeBand() * 0.5; };
 
 		xTick = xAxis.enter().append("g")
 			;
@@ -173,8 +181,8 @@ chartme.bar = function () {
 			.attr("class", "tick")
 			.attr("x1", x)
 			.attr("x2", x)
-			.attr("y1", -10)
-			.attr("y2", 10)
+			.attr("y1", 0)
+			.attr("y2", 5)
 			;
 
 		xTick.append("text")
@@ -217,10 +225,12 @@ chartme.bar = function () {
 			return chart;
 		}
 
-		// data.forEach(function (d) {
-		// 	d[xProperty] = xInputFormat.parse(d[xProperty]);
-		// 	d[yProperty] = +d[yProperty];
-		// });
+		data.forEach(function (d) {
+			// d[xProperty] = xInputFormat.parse(d[xProperty]);
+			d.forEach(function (d) {
+				d[yProperty] = +d[yProperty];
+			});
+		});
 
 		data = stackLayout(data);
 
