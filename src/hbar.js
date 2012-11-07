@@ -160,7 +160,7 @@ chartme.hbar = function () {
 
 		// Position y axis labels.
 		svg.selectAll(".y.axis text")
-			.attr("y", 0)
+			.attr("y", height - margin.bottom)
 			.attr("dy", -5)
 			;
 	}
