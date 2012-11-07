@@ -1,6 +1,6 @@
 (function(window, undefined){
 var chartme = window.chartme = { version: '0.0.1' };
-chartme.donut = function(data) {
+chartme.donut = function() {
 
 	var
 			width  = 300
@@ -99,7 +99,7 @@ chartme.donut = function(data) {
 			// 	pathHover.remove();
 			// });
 
-			chart.update = function (data) {
+			chart.data = function (data) {
 				if (!data) {
 					return;
 				}
@@ -148,7 +148,6 @@ chartme.donut = function(data) {
 					;
 			};
 
-			chart.update(data);
 		});
 	}
 
@@ -335,7 +334,7 @@ chartme.bar = function () {
 		, height = 300
 		, visWidth
 		, visHeight
-		, colors = [["#ecf0d1", "#afc331"], ["#e6cfec", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
+		, colors = [["#ecf0d1", "#d8e0a0", "#afc331"], ["#e6cfec", "#cd9dd8", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
 		// , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
 		, xInputFormat = d3.time.format("%Y%m%d")
 		, xOutputFormat = d3.time.format("%d-%m-%Y")
@@ -344,7 +343,6 @@ chartme.bar = function () {
 		, yMax
 		, svg
 		, vis
-		, xAxis
 		, yAxis
 		, xScale
 		, yScale
@@ -391,11 +389,12 @@ chartme.bar = function () {
 		yAxis = d3.svg.axis()
 			.scale(yScale)
 			.orient("right")
-			.ticks(4)
+			.ticks(2)
 			.tickSize(width)
 			.tickSubdivide(true)
 			;
 	}
+
 
 	function chart() {
 		init();
@@ -433,10 +432,7 @@ chartme.bar = function () {
 
 		layers.enter().append("g")
 			.attr("class", "layer")
-			.style("fill", function (d, i) {
-				return colorScale.range(colors[i])(yMax * 0.75);
-				// return colors[i+1];
-			})
+			.style("fill", function (d, i) { return colors[i][1]; })
 			;
 
 		layers.exit().remove();
@@ -547,31 +543,46 @@ chartme.bar = function () {
 		// 		.delay(delay);
 	}
 
+	function yMaxChange(max) {
+		yScale.domain([0, max]);
+		colorScale.domain([0, max]);
+	}
 
-	chart.update = function (data) {
+
+	chart.data = function (data) {
 		if (!data) {
 			return chart;
 		}
 
+		var max;
+
+		// Force values to be integer.
 		data.forEach(function (d) {
-			// d[xProperty] = xInputFormat.parse(d[xProperty]);
 			d.forEach(function (d) {
 				d[yProperty] = +d[yProperty];
 			});
 		});
 
+		// Apply the stack layout function on the data.
 		data = stackLayout(data);
 
-		yMax = d3.max(data, function (d) {
-			return d3.max(d, function (d) {
-				return d.y + d.y0;
+		// If yMax has been set manually use it, otherwise calculate it from the data.
+		if (yMax) {
+			max = yMax;
+		}
+		else {
+			max = d3.max(data, function (d) {
+				return d3.max(d, function (d) {
+					return d.y + d.y0;
+				});
 			});
-		});
+		}
+
+		yMaxChange(max);
 
 		// Update domain scales with the new data.
 		xScale.domain(d3.range(0, data[0].length));
-		yScale.domain([0, yMax]);
-		colorScale.domain([0, yMax]);
+
 
 		// Render chart and axis.
 		renderChart(data);
@@ -609,6 +620,16 @@ chartme.bar = function () {
 		if (!arguments.length) return yProperty;
 		yProperty = value;
 		return chart;
+	};
+
+	chart.yMax = function (value) {
+		if (!arguments.length) return yMax;
+		yMax = value;
+		return chart;
+	};
+
+	chart.yAxis = function () {
+		return yAxis;
 	};
 
 	chart.xInputFormat = function (value) {
@@ -786,13 +807,13 @@ chartme.hbar = function () {
 
 		// Position y axis labels.
 		svg.selectAll(".y.axis text")
-			.attr("y", 0)
+			.attr("y", height - margin.bottom)
 			.attr("dy", -5)
 			;
 	}
 
 
-	chart.update = function (data) {
+	chart.data = function (data) {
 		if (!data) {
 			return chart;
 		}
@@ -861,60 +882,4 @@ chartme.hbar = function () {
 	};
 
 	return chart;
-};
-if ($) {
-	$.fn.chartme = function (option) {
-		// return this.each(function () {
-				var
-					  $this = $(this)
-					, chartData = $this.data('chart');
-
-				var chart = chartme[chartData.type]()
-					.width($this.width())
-					.height($this.height());
-
-				var doWithChart = {
-					  'bar' : function (chart) {
-						chart.x(0).y(1);
-						// if (chartData.stack) {
-						// chart.stack().colors().y(2);
-						// }
-					}
-					, 'donut' : function () {
-						chart.label(0).value(1);
-					}
-					, 'hbar' : function (chart) {
-						chart.x(0).y(1);
-					}
-				};
-
-				doWithChart[chartData.type](chart);
-
-				d3.select(this[0]).call(chart);
-
-				if(chartData.data) {
-					chart.update(chartData.data);
-				}
-				return chart;
-		// });
-	};
-}
-
-$.fn.tooltip.Constructor.prototype.getPosition = function (inside) {
-		var el = this.$element[0]
-		var width, height
-		if ('http://www.w3.org/2000/svg' === el.namespaceURI) {
-				var bbox = el.getBBox()
-				width = bbox.width
-				height = bbox.height
-		} else {
-				width = el.offsetWidth
-				height = el.offsetHeight
-		}
-	return $.extend({}, (inside ? {top: 0, left: 0} : this.$element.offset()), {
-		width: width
-	, height: height
-	})
-};
-
-})(window);
+};})(window);

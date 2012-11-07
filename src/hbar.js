@@ -166,7 +166,7 @@ chartme.hbar = function () {
 	}
 
 
-	chart.update = function (data) {
+	chart.data = function (data) {
 		if (!data) {
 			return chart;
 		}

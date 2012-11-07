@@ -7,7 +7,7 @@ chartme.bar = function () {
 		, height = 300
 		, visWidth
 		, visHeight
-		, colors = [["#ecf0d1", "#afc331"], ["#e6cfec", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
+		, colors = [["#ecf0d1", "#d8e0a0", "#afc331"], ["#e6cfec", "#cd9dd8", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
 		// , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
 		, xInputFormat = d3.time.format("%Y%m%d")
 		, xOutputFormat = d3.time.format("%d-%m-%Y")
@@ -16,7 +16,6 @@ chartme.bar = function () {
 		, yMax
 		, svg
 		, vis
-		, xAxis
 		, yAxis
 		, xScale
 		, yScale
@@ -63,11 +62,12 @@ chartme.bar = function () {
 		yAxis = d3.svg.axis()
 			.scale(yScale)
 			.orient("right")
-			.ticks(4)
+			.ticks(2)
 			.tickSize(width)
 			.tickSubdivide(true)
 			;
 	}
+
 
 	function chart() {
 		init();
@@ -105,10 +105,7 @@ chartme.bar = function () {
 
 		layers.enter().append("g")
 			.attr("class", "layer")
-			.style("fill", function (d, i) {
-				return colorScale.range(colors[i])(yMax * 0.75);
-				// return colors[i+1];
-			})
+			.style("fill", function (d, i) { return colors[i][1]; })
 			;
 
 		layers.exit().remove();
@@ -219,31 +216,46 @@ chartme.bar = function () {
 		// 		.delay(delay);
 	}
 
+	function yMaxChange(max) {
+		yScale.domain([0, max]);
+		colorScale.domain([0, max]);
+	}
 
-	chart.update = function (data) {
+
+	chart.data = function (data) {
 		if (!data) {
 			return chart;
 		}
 
+		var max;
+
+		// Force values to be integer.
 		data.forEach(function (d) {
-			// d[xProperty] = xInputFormat.parse(d[xProperty]);
 			d.forEach(function (d) {
 				d[yProperty] = +d[yProperty];
 			});
 		});
 
+		// Apply the stack layout function on the data.
 		data = stackLayout(data);
 
-		yMax = d3.max(data, function (d) {
-			return d3.max(d, function (d) {
-				return d.y + d.y0;
+		// If yMax has been set manually use it, otherwise calculate it from the data.
+		if (yMax) {
+			max = yMax;
+		}
+		else {
+			max = d3.max(data, function (d) {
+				return d3.max(d, function (d) {
+					return d.y + d.y0;
+				});
 			});
-		});
+		}
+
+		yMaxChange(max);
 
 		// Update domain scales with the new data.
 		xScale.domain(d3.range(0, data[0].length));
-		yScale.domain([0, yMax]);
-		colorScale.domain([0, yMax]);
+
 
 		// Render chart and axis.
 		renderChart(data);
@@ -281,6 +293,16 @@ chartme.bar = function () {
 		if (!arguments.length) return yProperty;
 		yProperty = value;
 		return chart;
+	};
+
+	chart.yMax = function (value) {
+		if (!arguments.length) return yMax;
+		yMax = value;
+		return chart;
+	};
+
+	chart.yAxis = function () {
+		return yAxis;
 	};
 
 	chart.xInputFormat = function (value) {

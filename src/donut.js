@@ -1,4 +1,4 @@
-chartme.donut = function(data) {
+chartme.donut = function() {
 
 	var
 			width  = 300
@@ -97,7 +97,7 @@ chartme.donut = function(data) {
 			// 	pathHover.remove();
 			// });
 
-			chart.update = function (data) {
+			chart.data = function (data) {
 				if (!data) {
 					return;
 				}
@@ -146,7 +146,6 @@ chartme.donut = function(data) {
 					;
 			};
 
-			chart.update(data);
 		});
 	}
 

@@ -82,6 +82,8 @@
 	<div class="chart bar" data-chart='{"type":"bar"}'></div>
 
 	<div class="chart hbar" data-chart='{"type":"hbar"}'></div>
+
+	<div class="chart chart-with-format" data-chart='{"type":"bar"}'></div>
 <!--
 	<div class="chart" data-chart='{"type":"bar","stack":true,"data":[["20121001","9","4"],["20121002","2","5"],["20121003","12","3"],["20121004","11","9"],["20121005",0,3],["20121006",2,0]]}'></div>
  -->
@@ -160,20 +162,26 @@
 				]
 		];
 
+		var stackData2 = [[["20121001",9,"9s"],["20121002",2,"5h"],["20121003",12,"5h"],["20121004",11,"5h"],["20121005",0,"5h"],["20121006",2,"5h"]], [["20121001",4,"5h"],["20121002",5,"8h"],["20121003",3,"9s"],["20121004",9,"5h15s"],["20121005",3,"5h"],["20121006",1,"8s"]]];
+
 
 		var barChart = $(".chart.bar").chartme()
-			.update(stackData0);
-		var hBarChart = $(".chart.hbar").chartme()
-			.update(stackData0);
+			.data(stackData0);
 
+		var hBarChart = $(".chart.hbar").chartme()
+			.data(stackData0);
+
+		var barChart2 = $(".chart-with-format").chartme();
+		barChart2.yAxis().tickFormat(d3.format("p"));
+		barChart2.data(stackData2);
 
 
 		d3.select(window).on("click", function() {
 			data = data === data1 ? data2 : data1; // swap the data
-			// donut.update(data);
-			// bar.update(data);
-			barChart.update(stackData);
-			hBarChart.update(stackData);
+			// donut.data(data);
+			// bar.data(data);
+			barChart.data(stackData);
+			hBarChart.data(stackData);
 		});
 
 
