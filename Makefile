@@ -5,7 +5,6 @@ JS_FILES = \
 	src/line.js \
 	src/bar.js \
 	src/hbar.js \
-	src/plugin.js \
 	src/end.js
 
 all: clean chartme.js

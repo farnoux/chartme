@@ -9,6 +9,7 @@
 	<script src="vendor/bootstrap/js/bootstrap-tooltip.js"></script>
 
 	<script src="chartme.js"></script>
+	<script src="plugin.js"></script>
 
 	<link rel="stylesheet" href="vendor/bootstrap/bootstrap/css/bootstrap.css">
 
@@ -176,8 +177,24 @@
 		});
 
 
-
 		// see http://stackoverflow.com/questions/10727892/how-to-center-the-bootstrap-tooltip-on-an-svg
+		$.fn.tooltip.Constructor.prototype.getPosition = function (inside) {
+			var el = this.$element[0]
+			var width, height
+			if ('http://www.w3.org/2000/svg' === el.namespaceURI) {
+					var bbox = el.getBBox()
+					width = bbox.width
+					height = bbox.height
+			} else {
+					width = el.offsetWidth
+					height = el.offsetHeight
+			}
+			return $.extend({}, (inside ? {top: 0, left: 0} : this.$element.offset()), {
+				width: width
+			, height: height
+			})
+		};
+
 		$("svg .bar").tooltip({
 			  html: true
 			, title: function () {
