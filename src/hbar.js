@@ -7,7 +7,7 @@ chartme.hbar = function () {
 		, height = 300
 		, visWidth
 		, visHeight
-		, colors = [["#ecf0d1", "#afc331"], ["#e6cfec", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
+		, colors = [["#e6f6ff", "#98d8fd"], ["#e6cfec", "#9632b1"], ["#ecf0d1", "#afc331"]]
 		// , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
 		, xInputFormat = d3.time.format("%Y%m%d")
 		, xOutputFormat = d3.time.format("%d-%m-%Y")

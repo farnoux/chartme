@@ -8,50 +8,39 @@ chartme.donut = function() {
 		, colors = ["#ecf0d1", "#afc331"]
 		, radius
 		, donutRate = 0.6
-		, min = 0
-		, max
 		, valueProperty = "value"
 		, labelProperty = "label"
 		, svg
+		, arc
+		, colorScale
+		, pieLayout
 		;
 
-	function chart(selection) {
+	function init() {
+		colorScale = d3.scale.linear()
+			.range(colors);
 
 		radius = Math.min(width, height) * 0.5;
 
-		selection.each(function (d, i) {
+		// Generate arc data used by <path> elements.
+		arc = d3.svg.arc()
+			.outerRadius(radius * 0.98)
+			.innerRadius(radius * donutRate);
 
-			svg = d3.select(this).append("svg")
-					.attr("width", width)
-					.attr("height", height)
-				.append("g")
-					// Move the center of the chart from 0, 0 to radius, radius
-					.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+		pieLayout = d3.layout.pie()
+			.sort(null)
+			.value(function (d) { return d[valueProperty]; });
+	}
 
+	function chart() {
+		init();
 
-			var colorScale = d3.scale.linear()
-				.range(colors);
-
-			// Generate arc data used by <path> elements.
-			var arc = d3.svg.arc()
-				.outerRadius(radius * 0.98)
-				.innerRadius(radius * donutRate);
-
-			var pie = d3.layout.pie()
-				.sort(null)
-				.value(function (d) { return d[valueProperty]; });
-
-
-			// Store the currently-displayed angles in this._current.
-			// Then, interpolate from this._current to the new angles.
-			// See http://bl.ocks.org/1346410
-			function arcTween(a) {
-				var i = d3.interpolate(this._current, a);
-				this._current = i(0);
-				return function(t) {
-					return arc(i(t));
-				};
-			}
+		svg = this.append("svg")
+				.attr("width", width)
+				.attr("height", height)
+			.append("g")
+				// Move the center of the chart from 0, 0 to radius, radius
+				.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
 
 
 			// Slice label.
@@ -99,57 +88,77 @@ chartme.donut = function() {
 			// 	pathHover.remove();
 			// });
 
-			chart.data = function (data) {
-				if (!data) {
-					return;
-				}
 
-				data.forEach(function (d) {
-					d[valueProperty] = +d[valueProperty];
-				});
 
-				max = d3.max(data.map(function (d) { return d[valueProperty]; }));
+	}
 
-				colorScale.domain([min, max]);
 
-				var slices = svg.selectAll('g.slice')
-					.data(pie(data));
+	// Store the currently-displayed angles in this._current.
+	// Then, interpolate from this._current to the new angles.
+	// See http://bl.ocks.org/1346410
+	function arcTween(a) {
+		var i = d3.interpolate(this._current, a);
+		this._current = i(0);
+		return function (t) {
+			return arc(i(t));
+		};
+	}
+
+	function renderChart(data) {
+		var slices = svg.selectAll("g.slice")
+					.data(data);
 
 				// Create.
-				slices.enter().append('g')
-					.attr('class', 'slice')
+				slices.enter().append("g")
+					.attr("class", "slice")
 					// Slice path.
-					.append('path')
+					.append("path")
 						.attr("stroke", "#fff")
-						.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
-						// .attr('d', arc)
+						.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+						// .attr("d", arc)
 					.transition()
-						.duration(750)
+						.duration(300)
 						// .attrTween("d", arcTween)
 						.each(function (d) { this._current = d; })
 						;
 
 				// Update.
-				slices.select('path').transition()
-					.duration(750)
-					.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
+				slices.select("path").transition()
+					.duration(300)
+					.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
 					.attrTween("d", arcTween)
-						// .attr('d', arc)
+						// .attr("d", arc)
 						;
 
 				// Remove.
 				slices.exit().transition()
-					.duration(750)
-					.select('path')
-					.attr('fill', function (d, i) { return colorScale(d.data[valueProperty]); })
+					.duration(300)
+					.select("path")
+					.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
 					.attrTween("d", arcTween)
 					// .attr("fill", "red")
 					.remove()
 					;
-			};
-
-		});
 	}
+
+	chart.data = function (data) {
+		if (!data) {
+			return;
+		}
+
+		data.forEach(function (d) {
+			d[valueProperty] = +d[valueProperty];
+		});
+
+		var max = d3.max(data.map(function (d) { return d[valueProperty]; }));
+
+		colorScale.domain([0, max]);
+
+		data = pieLayout(data);
+
+		renderChart(data);
+	};
+
 
 	chart.width = function(value) {
 		if (!arguments.length) return width;
@@ -164,8 +173,8 @@ chartme.donut = function() {
 	};
 
 	chart.colors = function (value) {
-		if (!arguments.length) return colors;
-		colors = value;
+		if (!arguments.length) return colorScale.range();
+		colorScale.range(value);
 		return chart;
 	};
 
@@ -654,7 +663,7 @@ chartme.hbar = function () {
 		, height = 300
 		, visWidth
 		, visHeight
-		, colors = [["#ecf0d1", "#afc331"], ["#e6cfec", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
+		, colors = [["#e6f6ff", "#98d8fd"], ["#e6cfec", "#9632b1"], ["#ecf0d1", "#afc331"]]
 		// , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
 		, xInputFormat = d3.time.format("%Y%m%d")
 		, xOutputFormat = d3.time.format("%d-%m-%Y")
