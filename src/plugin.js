@@ -27,7 +27,9 @@
 			chart.yFormat(format[options.format]);
 		}
 
-
+		if(options.colors) {
+			chart.colors(options.colors);
+		}
 
 		if(options.data) {
 			chart.data(options.data);
