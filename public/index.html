@@ -100,6 +100,8 @@
 
 	<div class="chart chart-donut" data-chart='{"type":"donut", "colors":["#e6f6ff", "#98d8fd"], "data":[["Fred Arnoux","1.20"],["Fred+1","3.11"],["Fred+2","29.15"]]}'></div>
 
+	<div id="hbar-with-few-data" class="chart" data-chart='{"type":"hbar"}'></div>
+
 	<script type="text/javascript">
 		var data1 = [
 			 {value: 5, label: "ah"}
@@ -178,6 +180,8 @@
 		var barChart2 = $(".chart-with-format").chartme();
 		barChart2.yAxis().tickFormat(d3.format("p"));
 		barChart2.data(stackData2);
+
+		$("#hbar-with-few-data").chartme().data([[["20121004",11],["20121006",2]], [["20121001",4],["20121006",1]]]);
 
 
 		d3.select(window).on("click", function() {

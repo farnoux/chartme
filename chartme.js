@@ -669,6 +669,7 @@ chartme.hbar = function () {
 		, xOutputFormat = d3.time.format("%d-%m-%Y")
 		, xProperty = 'x'
 		, yProperty = 'y'
+		, minRangeBand = 50
 		, yMax
 		, svg
 		, vis
@@ -682,7 +683,6 @@ chartme.hbar = function () {
 		, y1 = function (d) { return yScale(d.y + d.y0) ; }
 		;
 
-
 	function init() {
 		// Init metrics.
 		visWidth  = width - margin.left - margin.right;
@@ -690,7 +690,7 @@ chartme.hbar = function () {
 
 		// Init scales.
 		xScale = d3.scale.ordinal()
-			.rangeBands([0, visHeight], 0.15);
+			.rangeBands([-visHeight, 0], 0.15);
 
 		yScale = d3.scale.linear()
 			.range([visWidth, 0])
@@ -727,14 +727,14 @@ chartme.hbar = function () {
 
 		vis = svg.append("g")
 			.attr("class", "vis")
-			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			.attr("transform", "translate(" + margin.left + "," + (height - margin.top) + ")")
 			.attr("width", visWidth)
 			.attr("height", visHeight)
 			;
 
 		svg.append("g")
 			.attr("class", "x axis")
-			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			.attr("transform", "translate(" + margin.left + "," + (height - margin.top) + ")")
 			;
 	}
 
@@ -837,6 +837,12 @@ chartme.hbar = function () {
 
 		// Update domain scales with the new data.
 		xScale.domain(d3.range(0, data[0].length));
+
+		if (xScale.rangeBand() > minRangeBand) {
+			xScale.rangeBands([-minRangeBand * 1.15 * data[0].length, 0], 0.15);
+		}
+
+
 		yScale.domain([yMax, 0]);
 		colorScale.domain([0, yMax]);
 
@@ -887,6 +893,12 @@ chartme.hbar = function () {
 	chart.xOutputFormat = function (value) {
 		if (!arguments.length) return xOutputFormat;
 		xOutputFormat = value;
+		return chart;
+	};
+
+	chart.minRangeBand = function (value) {
+		if (!arguments.length) return minRangeBand;
+		minRangeBand = value;
 		return chart;
 	};
 
