@@ -9,8 +9,6 @@ chartme.bar = function () {
 		, visHeight
 		, colors = [["#ecf0d1", "#d8e0a0", "#afc331"], ["#e6cfec", "#cd9dd8", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
 		// , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
-		, xInputFormat = d3.time.format("%Y%m%d")
-		, xOutputFormat = d3.time.format("%d-%m-%Y")
 		, xProperty = 'x'
 		, yProperty = 'y'
 		, yMax
@@ -50,15 +48,6 @@ chartme.bar = function () {
 			;
 
 		// Init axis.
-		// xAxis = d3.svg.axis()
-		// 	.scale(xAxisScale)
-		// 	.orient("bottom")
-		// 	// .ticks(6)
-		// 	// .ticks(xAxisScale.ticks(d3.time.days, 1))
-		// 	.tickSize(20)
-		// 	.tickFormat(function (d) { return xOutputFormat(d); })
-		// 	;
-
 		yAxis = d3.svg.axis()
 			.scale(yScale)
 			.orient("right")
@@ -303,18 +292,6 @@ chartme.bar = function () {
 
 	chart.yAxis = function () {
 		return yAxis;
-	};
-
-	chart.xInputFormat = function (value) {
-		if (!arguments.length) return xInputFormat;
-		xInputFormat = value;
-		return chart;
-	};
-
-	chart.xOutputFormat = function (value) {
-		if (!arguments.length) return xOutputFormat;
-		xOutputFormat = value;
-		return chart;
 	};
 
 	return chart;
