@@ -50,7 +50,7 @@ chartme.hbar = function () {
 		yAxis = d3.svg.axis()
 			.scale(yScale)
 			.orient("bottom")
-			.ticks(4)
+			.ticks(2)
 			.tickSize(visHeight)
 			.tickSubdivide(true)
 			;
@@ -91,10 +91,10 @@ chartme.hbar = function () {
 
 		layers.enter().append("g")
 			.attr("class", "layer")
-			.style("fill", function (d, i) {
-				return colorScale.range(colors[i])(yMax * 0.75);
+			.style("fill", function (d, i) { return colors[i][1]; })
+				// return colorScale.range(colors[i])(yMax * 0.75);
 				// return colors[i+1];
-			})
+			// })
 			;
 
 		layers.exit().remove();
@@ -165,19 +165,41 @@ chartme.hbar = function () {
 			;
 	}
 
+	function yMaxChange(max) {
+		yScale.domain([max, 0]);
+		colorScale.domain([0, max]);
+	}
+
 
 	chart.data = function (data) {
 		if (!data) {
 			return chart;
 		}
 
-		data = stackLayout(data);
+		var max;
 
-		yMax = d3.max(data, function (d) {
-			return d3.max(d, function (d) {
-				return d.y + d.y0;
+		// Force values to be integer.
+		data.forEach(function (d) {
+			d.forEach(function (d) {
+				d[yProperty] = +d[yProperty];
 			});
 		});
+
+		data = stackLayout(data);
+
+		// If yMax has been set manually use it, otherwise calculate it from the data.
+		if (yMax) {
+			max = yMax;
+		}
+		else {
+			max = d3.max(data, function (d) {
+				return d3.max(d, function (d) {
+					return d.y + d.y0;
+				});
+			});
+		}
+
+		yMaxChange(max);
 
 		// Update domain scales with the new data.
 		xScale.domain(d3.range(0, data[0].length));
@@ -185,10 +207,6 @@ chartme.hbar = function () {
 		if (xScale.rangeBand() > minRangeBand) {
 			xScale.rangeBands([-minRangeBand * 1.15 * data[0].length, 0], 0.15);
 		}
-
-
-		yScale.domain([yMax, 0]);
-		colorScale.domain([0, yMax]);
 
 		// Render chart and axis.
 		renderChart(data);
@@ -245,6 +263,17 @@ chartme.hbar = function () {
 		minRangeBand = value;
 		return chart;
 	};
+
+	chart.yMax = function (value) {
+		if (!arguments.length) return yMax;
+		yMax = value;
+		return chart;
+	};
+
+	chart.yAxis = function () {
+		return yAxis;
+	};
+
 
 	return chart;
 };
