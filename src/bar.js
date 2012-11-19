@@ -15,27 +15,23 @@ chartme.bar = function () {
 		, svg
 		, vis
 		, yAxis
-		, xScale
-		, yScale
+		, xScale = d3.scale.ordinal()
+		, yScale = d3.scale.linear()
 		, colorScale = d3.scale.linear()
 		, stackLayout
 		, y0 = function (d) { return yScale(d.y0) ; }
 		, y1 = function (d) { return yScale(d.y + d.y0) ; }
+		, currentData
 		;
 
 
 	function init() {
 		// Init metrics.
-		visWidth  = width - margin.left - margin.right;
+		// visWidth  = width - margin.left - margin.right;
 		visHeight = height - margin.top - margin.bottom;
 
 		// Init scales.
-		xScale = d3.scale.ordinal()
-			.rangeBands([0, visWidth], 0.15);
-
-		yScale = d3.scale.linear()
-			.range([visHeight, 0])
-			;
+		yScale.range([visHeight, 0]);
 
 		// Init layout.
 		stackLayout = d3.layout.stack()
@@ -48,18 +44,25 @@ chartme.bar = function () {
 			.scale(yScale)
 			.orient("right")
 			.ticks(2)
-			.tickSize(width)
 			.tickSubdivide(true)
 			;
 	}
 
+	function widthChange(width) {
+		visWidth  = width - margin.left - margin.right;
+
+		svg.attr("width", width);
+		vis.attr("width", visWidth);
+
+		xScale.rangeBands([0, visWidth], 0.15);
+		yAxis.tickSize(width);
+	}
 
 	function chart() {
 		init();
 
 		svg = this.append("svg")
-			// .datum(data)
-				.attr("width", width)
+				// .attr("width", width)
 				.attr("height", height)
 				;
 
@@ -76,14 +79,15 @@ chartme.bar = function () {
 		vis = svg.append("g")
 			.attr("class", "vis")
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-			.attr("width", visWidth)
+			// .attr("width", visWidth)
 			.attr("height", visHeight)
 			;
+
+		widthChange(width);
 	}
 
 
 	function renderChart(data) {
-
 		var layers = vis.selectAll("g.layer")
 			.data(data)
 			;
@@ -103,38 +107,24 @@ chartme.bar = function () {
 			// .attr("fill", function (d, i) {
 			// 	return this.parentNode.__data__.colorScale(0);
 			// })
+			.attr("x", function (d, i) { return xScale(i); })
 			.attr("width", xScale.rangeBand())
 			.attr("y", yScale(0))
 			.attr("height", 0)
-			.attr("x", function (d, i) { return xScale(i); })
-			// .each(function () { this.__data__.chart = chart; })
 			;
 
 		bars.transition()
 			.duration(300)
+			.attr("x", function (d, i) { return xScale(i); })
+			.attr("width", xScale.rangeBand())
 			.attr("y", y1)
 			.attr("height", function (d) { return y0(d) - y1(d); })
-			// .attr('fill', function (d, i) {
-			// 	return this.parentNode.__data__.colorScale(yMax*0.75);
-			// })
 			;
 
 		bars.exit().remove();
 	}
 
 	function renderAxis(data) {
-		// Add x axis.
-		// svg.append("g")
-		// 	.attr("class", "x axis")
-		// 	.attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
-		// 	.call(xAxis)
-		// 	;
-
-		// svg.selectAll(".x.axis text")
-		// 	.attr("y", 10)
-		// 	.attr("text-anchor", "start")
-		// 	.attr("dx", 4)
-		// 	;
 		var xAxis
 			, x
 			, xTick
@@ -172,6 +162,17 @@ chartme.bar = function () {
 			.attr("dy", 16)
 			.attr("text-anchor", "middle")
 			.text(function (d) { return d[xProperty]; })
+			;
+
+		xAxis.select("line").transition()
+			.duration(300)
+			.attr("x1", x)
+			.attr("x2", x)
+			;
+
+		xAxis.select("text").transition()
+			.duration(300)
+			.attr("x", x)
 			;
 
 		// Add y axis.
@@ -241,6 +242,7 @@ chartme.bar = function () {
 		// Update domain scales with the new data.
 		xScale.domain(d3.range(0, data[0].length));
 
+		currentData = data;
 
 		// Render chart and axis.
 		renderChart(data);
@@ -253,6 +255,9 @@ chartme.bar = function () {
 	chart.width = function (value) {
 		if (!arguments.length) return width;
 		width = value ? value : width;
+		if (currentData) {
+			widthChange(width);
+		}
 		return chart;
 	};
 
@@ -288,6 +293,12 @@ chartme.bar = function () {
 
 	chart.yAxis = function () {
 		return yAxis;
+	};
+
+	chart.refresh = function () {
+		renderChart(currentData);
+		renderAxis(currentData);
+		return chart;
 	};
 
 	return chart;

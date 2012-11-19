@@ -20,25 +20,21 @@ chartme.hbar = function () {
 		, xAxis
 		, yAxis
 		, xScale
-		, yScale
+		, yScale = d3.scale.linear()
 		, colorScale = d3.scale.linear()
 		, stackLayout
 		, y0 = function (d) { return yScale(d.y0) ; }
 		, y1 = function (d) { return yScale(d.y + d.y0) ; }
+		, currentData
 		;
 
 	function init() {
 		// Init metrics.
-		visWidth  = width - margin.left - margin.right;
 		visHeight = height - margin.top - margin.bottom;
 
 		// Init scales.
 		xScale = d3.scale.ordinal()
 			.rangeBands([-visHeight, 0], 0.15);
-
-		yScale = d3.scale.linear()
-			.range([visWidth, 0])
-			;
 
 		// Init layout.
 		stackLayout = d3.layout.stack()
@@ -56,11 +52,22 @@ chartme.hbar = function () {
 			;
 	}
 
+	function widthChange() {
+		visWidth  = width - margin.left - margin.right;
+
+		svg.attr("width", width);
+		vis.attr("width", visWidth);
+
+		yScale.range([visWidth, 0]);
+
+		// xScale.rangeBands([0, visWidth], 0.15);
+		// yAxis.tickSize(width);
+	}
+
 	function chart() {
 		init();
 
 		svg = this.append("svg")
-				.attr("width", width)
 				.attr("height", height)
 				;
 
@@ -72,7 +79,6 @@ chartme.hbar = function () {
 		vis = svg.append("g")
 			.attr("class", "vis")
 			.attr("transform", "translate(" + margin.left + "," + (height - margin.top) + ")")
-			.attr("width", visWidth)
 			.attr("height", visHeight)
 			;
 
@@ -80,6 +86,8 @@ chartme.hbar = function () {
 			.attr("class", "x axis")
 			.attr("transform", "translate(" + margin.left + "," + (height - margin.top) + ")")
 			;
+
+		widthChange();
 	}
 
 
@@ -208,6 +216,8 @@ chartme.hbar = function () {
 			xScale.rangeBands([-minRangeBand * 1.15 * data[0].length, 0], 0.15);
 		}
 
+		currentData = data;
+
 		// Render chart and axis.
 		renderChart(data);
 		renderAxis(data);
@@ -219,6 +229,9 @@ chartme.hbar = function () {
 	chart.width = function (value) {
 		if (!arguments.length) return width;
 		width = value ? value : width;
+		if (currentData) {
+			widthChange();
+		}
 		return chart;
 	};
 
@@ -272,6 +285,12 @@ chartme.hbar = function () {
 
 	chart.yAxis = function () {
 		return yAxis;
+	};
+
+	chart.refresh = function () {
+		renderChart(currentData);
+		renderAxis(currentData);
+		return chart;
 	};
 
 

@@ -28,6 +28,9 @@
 			height: 300px;
 			position: relative;
 		}
+		.full-width {
+			width: 100%;
+		}
 
 		.line {
 			fill: none;
@@ -79,9 +82,9 @@
 </head>
 <body>
 
-	<div class="chart bar" data-chart='{"type":"bar"}'></div>
+	<div class="chart bar full-width" data-chart='{"type":"bar"}'></div>
 
-	<div class="chart hbar" data-chart='{"type":"hbar"}'></div>
+	<div class="chart hbar full-width" data-chart='{"type":"hbar"}'></div>
 
 	<div class="chart chart-with-format" data-chart='{"type":"bar"}'></div>
 
@@ -107,7 +110,7 @@
 
 
 		$(".chart").tooltip({
-			  html: true
+				html: true
 			, selector: "svg rect"
 			, title: function () {
 				var d = this.__data__;
@@ -209,6 +212,16 @@
 			hBarChart.data(stackData);
 			donut.data(donutData);
 		});
+
+		$(window).on("resize", function() {
+			barChart.width($(".chart.bar").width());
+			barChart.refresh();
+
+			hBarChart.width($(".chart.hbar").width());
+			hBarChart.refresh();
+				// .attr("height", Math.round(targetWidth / aspect));
+		})
+		.trigger("resize");
 
 
 		// see http://stackoverflow.com/questions/10727892/how-to-center-the-bootstrap-tooltip-on-an-svg
