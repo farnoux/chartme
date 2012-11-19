@@ -7,7 +7,6 @@
 	<script src="components/d3/d3.v2.js"></script>
 	<script src="components/jquery/jquery.js"></script>
 	<script src="components/bootstrap/js/bootstrap-tooltip.js"></script>
-
 	<script src="chartme.js"></script>
 	<script src="src/plugin.js"></script>
 
@@ -27,6 +26,7 @@
 		.chart {
 			width: 800px;
 			height: 300px;
+			position: relative;
 		}
 
 		.line {
@@ -84,6 +84,7 @@
 	<div class="chart hbar" data-chart='{"type":"hbar"}'></div>
 
 	<div class="chart chart-with-format" data-chart='{"type":"bar"}'></div>
+
 <!--
 	<div class="chart" data-chart='{"type":"bar","stack":true,"data":[["20121001","9","4"],["20121002","2","5"],["20121003","12","3"],["20121004","11","9"],["20121005",0,3],["20121006",2,0]]}'></div>
  -->
@@ -103,6 +104,22 @@
 	<div id="hbar-with-few-data" class="chart" data-chart='{"type":"hbar"}'></div>
 
 	<script type="text/javascript">
+
+
+		$(".chart").tooltip({
+			  html: true
+			, selector: "svg rect"
+			, title: function () {
+				var d = this.__data__;
+
+				var date = d3.time.format("%Y%m%d").parse(d[0]);
+				date = d3.time.format("%d-%m-%Y")(date);
+				return '<b class="lead">' + d[1] + '</b><br>' + date;
+				// return '<b>' + d[1] + '</b><br>' + chart.xOutputFormat()(d[0]);
+			}
+		});
+
+
 		var data1 = [
 			 {value: 5, label: "ah"}
 			,{value:8, label: "oh"}
@@ -211,19 +228,6 @@
 			, height: height
 			})
 		};
-
-		$("svg .bar").tooltip({
-			  html: true
-			, title: function () {
-				var d = this.__data__
-					, chart = d.chart;
-
-				var date = d3.time.format("%Y%m%d").parse(d[0]);
-				date = d3.time.format("%d-%m-%Y")(date);
-				return '<b class="lead">' + d[1] + '</b><br>' + date;
-				// return '<b>' + d[1] + '</b><br>' + chart.xOutputFormat()(d[0]);
-			}
-		});
 
 
 	</script>

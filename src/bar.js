@@ -2,7 +2,7 @@
 chartme.bar = function () {
 
 	var
-			margin = { top: 20, right: 20, bottom: 20, left: 20 }
+			margin = { top: 20, right: 20, bottom: 20, left: 50 }
 		, width  = 600
 		, height = 300
 		, visWidth
@@ -36,10 +36,6 @@ chartme.bar = function () {
 		yScale = d3.scale.linear()
 			.range([visHeight, 0])
 			;
-
-		// var xAxisScale = d3.time.scale()
-		// 	.range([0, visWidth])
-		// 	;
 
 		// Init layout.
 		stackLayout = d3.layout.stack()

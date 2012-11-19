@@ -5,7 +5,7 @@ chartme.donut = function() {
 	var
 			width  = 300
 		, height = 300
-		, colors = ["#ecf0d1", "#afc331"]
+		, colors = ["#e6f6ff", "#98d8fd"]
 		, radius
 		, donutRate = 0.6
 		, valueProperty = "value"
@@ -25,7 +25,8 @@ chartme.donut = function() {
 		// Generate arc data used by <path> elements.
 		arc = d3.svg.arc()
 			.outerRadius(radius * 0.98)
-			.innerRadius(radius * donutRate);
+			.innerRadius(radius * donutRate)
+			;
 
 		pieLayout = d3.layout.pie()
 			.sort(null)
@@ -41,22 +42,6 @@ chartme.donut = function() {
 			.append("g")
 				// Move the center of the chart from 0, 0 to radius, radius
 				.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
-
-
-			// Slice label.
-/*
-
-			slices.append("text")
-				// Position the label origin to the slice's center.
-				.attr("transform", function (d) {
-					return "translate(" + arc.centroid(d) + ")";
-				})
-				// Center the text on its origin.
-				.attr("text-anchor", "middle")
-				.text(function(d, i) {
-					return d.data[labelProperty];
-				});
-*/
 
 			// var arcHover = d3.svg.arc()
 			// 	.innerRadius(radius * 0.21)
@@ -87,9 +72,6 @@ chartme.donut = function() {
 			// 	circleHover.remove();
 			// 	pathHover.remove();
 			// });
-
-
-
 	}
 
 
@@ -108,37 +90,57 @@ chartme.donut = function() {
 		var slices = svg.selectAll("g.slice")
 					.data(data);
 
-				// Create.
-				slices.enter().append("g")
-					.attr("class", "slice")
-					// Slice path.
-					.append("path")
-						.attr("stroke", "#fff")
-						.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
-						// .attr("d", arc)
-					.transition()
-						.duration(300)
-						// .attrTween("d", arcTween)
-						.each(function (d) { this._current = d; })
-						;
+		// Create.
+		var g = slices.enter()
+			.append("g")
+			.attr("class", "slice")
+			;
 
-				// Update.
-				slices.select("path").transition()
-					.duration(300)
-					.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
-					.attrTween("d", arcTween)
-						// .attr("d", arc)
-						;
+		// Slice path.
+		g.append("path")
+				.attr("stroke", "#fff")
+				.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+				.each(function (d) { this._current = d; })
+				;
+		// Slice label.
+		g.append("text")
+			// Center the text on its origin.
+			.attr("text-anchor", "middle")
+			.attr("transform", function (d) {
+				return "translate(" + arc.centroid(d) + ")";
+			})
+			.text(function (d) {
+				return d.data[labelProperty];
+			})
+			;
 
-				// Remove.
-				slices.exit().transition()
-					.duration(300)
-					.select("path")
-					.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
-					.attrTween("d", arcTween)
-					// .attr("fill", "red")
-					.remove()
-					;
+		// Update.
+		slices.select("path").transition()
+			.duration(300)
+			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.attrTween("d", arcTween)
+				// .attr("d", arc)
+				;
+		slices.select("text").transition()
+			.duration(300)
+			// Position the label origin to the slice's center.
+			.attr("transform", function (d) {
+				return "translate(" + arc.centroid(d) + ")";
+			})
+			.text(function (d) {
+				return d.data[labelProperty];
+			})
+			;
+
+		// Remove.
+		slices.exit().transition()
+			.duration(300)
+			.select("path")
+			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.attrTween("d", arcTween)
+			// .attr("fill", "red")
+			.remove()
+			;
 	}
 
 	chart.data = function (data) {
@@ -338,15 +340,13 @@ chartme.line = function(data) {
 chartme.bar = function () {
 
 	var
-			margin = { top: 20, right: 20, bottom: 20, left: 20 }
+			margin = { top: 20, right: 20, bottom: 20, left: 50 }
 		, width  = 600
 		, height = 300
 		, visWidth
 		, visHeight
 		, colors = [["#ecf0d1", "#d8e0a0", "#afc331"], ["#e6cfec", "#cd9dd8", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
 		// , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
-		, xInputFormat = d3.time.format("%Y%m%d")
-		, xOutputFormat = d3.time.format("%d-%m-%Y")
 		, xProperty = 'x'
 		, yProperty = 'y'
 		, yMax
@@ -375,10 +375,6 @@ chartme.bar = function () {
 			.range([visHeight, 0])
 			;
 
-		// var xAxisScale = d3.time.scale()
-		// 	.range([0, visWidth])
-		// 	;
-
 		// Init layout.
 		stackLayout = d3.layout.stack()
 			.x(function (d) { return d[xProperty]; })
@@ -386,15 +382,6 @@ chartme.bar = function () {
 			;
 
 		// Init axis.
-		// xAxis = d3.svg.axis()
-		// 	.scale(xAxisScale)
-		// 	.orient("bottom")
-		// 	// .ticks(6)
-		// 	// .ticks(xAxisScale.ticks(d3.time.days, 1))
-		// 	.tickSize(20)
-		// 	.tickFormat(function (d) { return xOutputFormat(d); })
-		// 	;
-
 		yAxis = d3.svg.axis()
 			.scale(yScale)
 			.orient("right")
@@ -641,18 +628,6 @@ chartme.bar = function () {
 		return yAxis;
 	};
 
-	chart.xInputFormat = function (value) {
-		if (!arguments.length) return xInputFormat;
-		xInputFormat = value;
-		return chart;
-	};
-
-	chart.xOutputFormat = function (value) {
-		if (!arguments.length) return xOutputFormat;
-		xOutputFormat = value;
-		return chart;
-	};
-
 	return chart;
 };/*global chartme:true, d3:true*/
 chartme.hbar = function () {
@@ -706,7 +681,7 @@ chartme.hbar = function () {
 		yAxis = d3.svg.axis()
 			.scale(yScale)
 			.orient("bottom")
-			.ticks(4)
+			.ticks(2)
 			.tickSize(visHeight)
 			.tickSubdivide(true)
 			;
@@ -747,10 +722,10 @@ chartme.hbar = function () {
 
 		layers.enter().append("g")
 			.attr("class", "layer")
-			.style("fill", function (d, i) {
-				return colorScale.range(colors[i])(yMax * 0.75);
+			.style("fill", function (d, i) { return colors[i][1]; })
+				// return colorScale.range(colors[i])(yMax * 0.75);
 				// return colors[i+1];
-			})
+			// })
 			;
 
 		layers.exit().remove();
@@ -821,19 +796,41 @@ chartme.hbar = function () {
 			;
 	}
 
+	function yMaxChange(max) {
+		yScale.domain([max, 0]);
+		colorScale.domain([0, max]);
+	}
+
 
 	chart.data = function (data) {
 		if (!data) {
 			return chart;
 		}
 
-		data = stackLayout(data);
+		var max;
 
-		yMax = d3.max(data, function (d) {
-			return d3.max(d, function (d) {
-				return d.y + d.y0;
+		// Force values to be integer.
+		data.forEach(function (d) {
+			d.forEach(function (d) {
+				d[yProperty] = +d[yProperty];
 			});
 		});
+
+		data = stackLayout(data);
+
+		// If yMax has been set manually use it, otherwise calculate it from the data.
+		if (yMax) {
+			max = yMax;
+		}
+		else {
+			max = d3.max(data, function (d) {
+				return d3.max(d, function (d) {
+					return d.y + d.y0;
+				});
+			});
+		}
+
+		yMaxChange(max);
 
 		// Update domain scales with the new data.
 		xScale.domain(d3.range(0, data[0].length));
@@ -841,10 +838,6 @@ chartme.hbar = function () {
 		if (xScale.rangeBand() > minRangeBand) {
 			xScale.rangeBands([-minRangeBand * 1.15 * data[0].length, 0], 0.15);
 		}
-
-
-		yScale.domain([yMax, 0]);
-		colorScale.domain([0, yMax]);
 
 		// Render chart and axis.
 		renderChart(data);
@@ -901,6 +894,17 @@ chartme.hbar = function () {
 		minRangeBand = value;
 		return chart;
 	};
+
+	chart.yMax = function (value) {
+		if (!arguments.length) return yMax;
+		yMax = value;
+		return chart;
+	};
+
+	chart.yAxis = function () {
+		return yAxis;
+	};
+
 
 	return chart;
 };})(window);
