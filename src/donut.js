@@ -3,7 +3,7 @@ chartme.donut = function() {
 	var
 			width  = 300
 		, height = 300
-		, colors = ["#ecf0d1", "#afc331"]
+		, colors = ["#e6f6ff", "#98d8fd"]
 		, radius
 		, donutRate = 0.6
 		, valueProperty = "value"
@@ -23,7 +23,8 @@ chartme.donut = function() {
 		// Generate arc data used by <path> elements.
 		arc = d3.svg.arc()
 			.outerRadius(radius * 0.98)
-			.innerRadius(radius * donutRate);
+			.innerRadius(radius * donutRate)
+			;
 
 		pieLayout = d3.layout.pie()
 			.sort(null)
@@ -39,22 +40,6 @@ chartme.donut = function() {
 			.append("g")
 				// Move the center of the chart from 0, 0 to radius, radius
 				.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
-
-
-			// Slice label.
-/*
-
-			slices.append("text")
-				// Position the label origin to the slice's center.
-				.attr("transform", function (d) {
-					return "translate(" + arc.centroid(d) + ")";
-				})
-				// Center the text on its origin.
-				.attr("text-anchor", "middle")
-				.text(function(d, i) {
-					return d.data[labelProperty];
-				});
-*/
 
 			// var arcHover = d3.svg.arc()
 			// 	.innerRadius(radius * 0.21)
@@ -85,9 +70,6 @@ chartme.donut = function() {
 			// 	circleHover.remove();
 			// 	pathHover.remove();
 			// });
-
-
-
 	}
 
 
@@ -106,37 +88,57 @@ chartme.donut = function() {
 		var slices = svg.selectAll("g.slice")
 					.data(data);
 
-				// Create.
-				slices.enter().append("g")
-					.attr("class", "slice")
-					// Slice path.
-					.append("path")
-						.attr("stroke", "#fff")
-						.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
-						// .attr("d", arc)
-					.transition()
-						.duration(300)
-						// .attrTween("d", arcTween)
-						.each(function (d) { this._current = d; })
-						;
+		// Create.
+		var g = slices.enter()
+			.append("g")
+			.attr("class", "slice")
+			;
 
-				// Update.
-				slices.select("path").transition()
-					.duration(300)
-					.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
-					.attrTween("d", arcTween)
-						// .attr("d", arc)
-						;
+		// Slice path.
+		g.append("path")
+				.attr("stroke", "#fff")
+				.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+				.each(function (d) { this._current = d; })
+				;
+		// Slice label.
+		g.append("text")
+			// Center the text on its origin.
+			.attr("text-anchor", "middle")
+			.attr("transform", function (d) {
+				return "translate(" + arc.centroid(d) + ")";
+			})
+			.text(function (d) {
+				return d.data[labelProperty];
+			})
+			;
 
-				// Remove.
-				slices.exit().transition()
-					.duration(300)
-					.select("path")
-					.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
-					.attrTween("d", arcTween)
-					// .attr("fill", "red")
-					.remove()
-					;
+		// Update.
+		slices.select("path").transition()
+			.duration(300)
+			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.attrTween("d", arcTween)
+				// .attr("d", arc)
+				;
+		slices.select("text").transition()
+			.duration(300)
+			// Position the label origin to the slice's center.
+			.attr("transform", function (d) {
+				return "translate(" + arc.centroid(d) + ")";
+			})
+			.text(function (d) {
+				return d.data[labelProperty];
+			})
+			;
+
+		// Remove.
+		slices.exit().transition()
+			.duration(300)
+			.select("path")
+			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.attrTween("d", arcTween)
+			// .attr("fill", "red")
+			.remove()
+			;
 	}
 
 	chart.data = function (data) {
