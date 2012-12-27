@@ -84,6 +84,14 @@ chartme.hbar = function () {
 		widthChange();
 	}
 
+	function dataKey (d) {
+		return d[xProperty];
+	}
+
+	function barY (d, i) {
+		return xScale(i);
+	}
+
 
 	function renderChart(data) {
 
@@ -102,20 +110,22 @@ chartme.hbar = function () {
 		layers.exit().remove();
 
 		var bars = layers.selectAll(".bar")
-			.data(function (d) { return d; });
+			.data(function (d) { return d; }, dataKey);
 
 		bars.enter().append("rect")
 			.attr("class", "bar")
-			.attr("height", xScale.rangeBand())
 			.attr("x", 0)
 			.attr("width", 0)
-			.attr("y", function (d, i) { return xScale(i); })
+			.attr("height", xScale.rangeBand())
+			.attr("y", barY)
 			;
 
 		bars.transition()
-			.duration(function (d, i) { return (i+1) * 100; })
+			.duration(200)
 			.attr("x", y0)
 			.attr("width", function (d) { return y1(d) - y0(d); })
+			.attr("height", xScale.rangeBand())
+			.attr("y", barY)
 			;
 
 		bars.exit().remove();
@@ -131,21 +141,13 @@ chartme.hbar = function () {
 		// Add x axis.
 		xAxis = svg.select(".x.axis")
 			.selectAll("g")
-			.data(data[0])
+			.data(data[0], dataKey)
 			;
 
 		x = function (d, i) { return xScale(i) + xScale.rangeBand() * 0.5; };
 
-		xTick = xAxis.enter().append("g")
-			;
-
-		// xTick.append("line")
-		// 	.attr("class", "tick")
-		// 	.attr("y1", x)
-		// 	.attr("y2", x)
-		// 	.attr("x1", -10)
-		// 	.attr("x2", 10)
-		// 	;
+		xTick = xAxis.enter()
+			.append("g");
 
 		xTick.append("text")
 			.attr("y", x)
@@ -154,6 +156,12 @@ chartme.hbar = function () {
 			.attr("text-anchor", "left")
 			.text(function (d) { return d[xProperty]; })
 			;
+
+		xAxis.select("text").transition()
+			.duration(200)
+			.attr("y", x);
+
+		xAxis.exit().remove();
 
 		// Add y axis.
 		svg.select(".y.axis")
