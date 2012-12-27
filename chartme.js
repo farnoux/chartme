@@ -673,8 +673,6 @@ chartme.hbar = function () {
 		, visHeight
 		, colors = [["#e6f6ff", "#98d8fd"], ["#e6cfec", "#9632b1"], ["#ecf0d1", "#afc331"]]
 		// , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
-		, xInputFormat = d3.time.format("%Y%m%d")
-		, xOutputFormat = d3.time.format("%d-%m-%Y")
 		, xProperty = 'x'
 		, yProperty = 'y'
 		, minRangeBand = 50
@@ -918,18 +916,6 @@ chartme.hbar = function () {
 	chart.y = function (value) {
 		if (!arguments.length) return yProperty;
 		yProperty = value;
-		return chart;
-	};
-
-	chart.xInputFormat = function (value) {
-		if (!arguments.length) return xInputFormat;
-		xInputFormat = value;
-		return chart;
-	};
-
-	chart.xOutputFormat = function (value) {
-		if (!arguments.length) return xOutputFormat;
-		xOutputFormat = value;
 		return chart;
 	};
 
