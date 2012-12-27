@@ -48,7 +48,7 @@ chartme.bar = function () {
 			;
 	}
 
-	function widthChange(width) {
+	function widthChange() {
 		visWidth  = width - margin.left - margin.right;
 
 		svg.attr("width", width);
@@ -256,7 +256,7 @@ chartme.bar = function () {
 		if (!arguments.length) return width;
 		width = value ? value : width;
 		if (currentData) {
-			widthChange(width);
+			widthChange();
 		}
 		return chart;
 	};
