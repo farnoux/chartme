@@ -9,38 +9,45 @@ chartme.donut = function() {
 		, valueProperty = "value"
 		, labelProperty = "label"
 		, svg
-		, arc
+		, vis
+		, arc = d3.svg.arc()
 		, colorScale
 		, pieLayout
+		, currentData
 		;
 
 	function init() {
 		colorScale = d3.scale.linear()
 			.range(colors);
 
-		radius = Math.min(width, height) * 0.5;
-
-		// Generate arc data used by <path> elements.
-		arc = d3.svg.arc()
-			.outerRadius(radius * 0.98)
-			.innerRadius(radius * donutRate)
-			;
-
 		pieLayout = d3.layout.pie()
 			.sort(null)
 			.value(function (d) { return d[valueProperty]; });
+	}
+
+	function widthChange() {
+		radius = Math.min(width, height) * 0.5;
+
+		// Generate arc data used by <path> elements.
+		arc.outerRadius(radius * 0.98)
+			.innerRadius(radius * donutRate)
+			;
+
+		svg.attr("width", width);
+		vis.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
 	}
 
 	function chart() {
 		init();
 
 		svg = this.append("svg")
-				.attr("width", width)
-				.attr("height", height)
-			.append("g")
+				.attr("height", height);
+
+		vis = svg.append("g")
 				// Move the center of the chart from 0, 0 to radius, radius
 				.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
 
+		widthChange();
 			// var arcHover = d3.svg.arc()
 			// 	.innerRadius(radius * 0.21)
 			// 	.outerRadius(radius * donutRate * 0.99);
@@ -72,6 +79,11 @@ chartme.donut = function() {
 			// });
 	}
 
+	function sliceLabel(d) {
+		var angle = d.endAngle - d.startAngle;
+		// approximatively, O.6 radians = 34 degrees.
+		return angle > 0.6 ? d.data[labelProperty] : "";
+	}
 
 	// Store the currently-displayed angles in this._current.
 	// Then, interpolate from this._current to the new angles.
@@ -85,7 +97,7 @@ chartme.donut = function() {
 	}
 
 	function renderChart(data) {
-		var slices = svg.selectAll("g.slice")
+		var slices = vis.selectAll("g.slice")
 					.data(data);
 
 		// Create.
@@ -96,10 +108,11 @@ chartme.donut = function() {
 
 		// Slice path.
 		g.append("path")
-				.attr("stroke", "#fff")
-				.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
-				.each(function (d) { this._current = d; })
-				;
+			.attr("stroke", "#fff")
+			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.each(function (d) { this._current = d; })
+			;
+
 		// Slice label.
 		g.append("text")
 			// Center the text on its origin.
@@ -107,9 +120,7 @@ chartme.donut = function() {
 			.attr("transform", function (d) {
 				return "translate(" + arc.centroid(d) + ")";
 			})
-			.text(function (d) {
-				return d.data[labelProperty];
-			})
+			.text(sliceLabel)
 			;
 
 		// Update.
@@ -119,15 +130,15 @@ chartme.donut = function() {
 			.attrTween("d", arcTween)
 				// .attr("d", arc)
 				;
+
+
 		slices.select("text").transition()
 			.duration(300)
 			// Position the label origin to the slice's center.
 			.attr("transform", function (d) {
 				return "translate(" + arc.centroid(d) + ")";
 			})
-			.text(function (d) {
-				return d.data[labelProperty];
-			})
+			.text(sliceLabel)
 			;
 
 		// Remove.
@@ -156,13 +167,18 @@ chartme.donut = function() {
 
 		data = pieLayout(data);
 
+		currentData = data;
+
 		renderChart(data);
 	};
 
 
 	chart.width = function(value) {
 		if (!arguments.length) return width;
-		width = value;
+		width = value ? value : width;
+		if (currentData) {
+			widthChange();
+		}
 		return chart;
 	};
 
@@ -189,6 +205,12 @@ chartme.donut = function() {
 		labelProperty = value;
 		return chart;
 	};
+
+	chart.refresh = function () {
+		renderChart(currentData);
+		return chart;
+	};
+
 
 	return chart;
 };

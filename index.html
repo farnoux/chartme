@@ -211,6 +211,9 @@
 			barChart.data(stackData);
 			hBarChart.data(stackData);
 			donut.data(donutData);
+
+			donut.width(100);
+			donut.refresh();
 		});
 
 		$(window).on("resize", function() {
@@ -219,7 +222,6 @@
 
 			hBarChart.width($(".chart.hbar").width());
 			hBarChart.refresh();
-				// .attr("height", Math.round(targetWidth / aspect));
 		})
 		.trigger("resize");
 
