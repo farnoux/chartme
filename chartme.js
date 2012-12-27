@@ -11,38 +11,45 @@ chartme.donut = function() {
 		, valueProperty = "value"
 		, labelProperty = "label"
 		, svg
-		, arc
+		, vis
+		, arc = d3.svg.arc()
 		, colorScale
 		, pieLayout
+		, currentData
 		;
 
 	function init() {
 		colorScale = d3.scale.linear()
 			.range(colors);
 
-		radius = Math.min(width, height) * 0.5;
-
-		// Generate arc data used by <path> elements.
-		arc = d3.svg.arc()
-			.outerRadius(radius * 0.98)
-			.innerRadius(radius * donutRate)
-			;
-
 		pieLayout = d3.layout.pie()
 			.sort(null)
 			.value(function (d) { return d[valueProperty]; });
+	}
+
+	function widthChange() {
+		radius = Math.min(width, height) * 0.5;
+
+		// Generate arc data used by <path> elements.
+		arc.outerRadius(radius * 0.98)
+			.innerRadius(radius * donutRate)
+			;
+
+		svg.attr("width", width);
+		vis.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
 	}
 
 	function chart() {
 		init();
 
 		svg = this.append("svg")
-				.attr("width", width)
-				.attr("height", height)
-			.append("g")
+				.attr("height", height);
+
+		vis = svg.append("g")
 				// Move the center of the chart from 0, 0 to radius, radius
 				.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
 
+		widthChange();
 			// var arcHover = d3.svg.arc()
 			// 	.innerRadius(radius * 0.21)
 			// 	.outerRadius(radius * donutRate * 0.99);
@@ -74,6 +81,11 @@ chartme.donut = function() {
 			// });
 	}
 
+	function sliceLabel(d) {
+		var angle = d.endAngle - d.startAngle;
+		// approximatively, O.6 radians = 34 degrees.
+		return angle > 0.6 ? d.data[labelProperty] : "";
+	}
 
 	// Store the currently-displayed angles in this._current.
 	// Then, interpolate from this._current to the new angles.
@@ -87,7 +99,7 @@ chartme.donut = function() {
 	}
 
 	function renderChart(data) {
-		var slices = svg.selectAll("g.slice")
+		var slices = vis.selectAll("g.slice")
 					.data(data);
 
 		// Create.
@@ -98,10 +110,11 @@ chartme.donut = function() {
 
 		// Slice path.
 		g.append("path")
-				.attr("stroke", "#fff")
-				.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
-				.each(function (d) { this._current = d; })
-				;
+			.attr("stroke", "#fff")
+			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.each(function (d) { this._current = d; })
+			;
+
 		// Slice label.
 		g.append("text")
 			// Center the text on its origin.
@@ -109,9 +122,7 @@ chartme.donut = function() {
 			.attr("transform", function (d) {
 				return "translate(" + arc.centroid(d) + ")";
 			})
-			.text(function (d) {
-				return d.data[labelProperty];
-			})
+			.text(sliceLabel)
 			;
 
 		// Update.
@@ -121,15 +132,15 @@ chartme.donut = function() {
 			.attrTween("d", arcTween)
 				// .attr("d", arc)
 				;
+
+
 		slices.select("text").transition()
 			.duration(300)
 			// Position the label origin to the slice's center.
 			.attr("transform", function (d) {
 				return "translate(" + arc.centroid(d) + ")";
 			})
-			.text(function (d) {
-				return d.data[labelProperty];
-			})
+			.text(sliceLabel)
 			;
 
 		// Remove.
@@ -158,13 +169,18 @@ chartme.donut = function() {
 
 		data = pieLayout(data);
 
+		currentData = data;
+
 		renderChart(data);
 	};
 
 
 	chart.width = function(value) {
 		if (!arguments.length) return width;
-		width = value;
+		width = value ? value : width;
+		if (currentData) {
+			widthChange();
+		}
 		return chart;
 	};
 
@@ -191,6 +207,12 @@ chartme.donut = function() {
 		labelProperty = value;
 		return chart;
 	};
+
+	chart.refresh = function () {
+		renderChart(currentData);
+		return chart;
+	};
+
 
 	return chart;
 };
@@ -353,8 +375,8 @@ chartme.bar = function () {
 		, svg
 		, vis
 		, yAxis
-		, xScale
-		, yScale
+		, xScale = d3.scale.ordinal()
+		, yScale = d3.scale.linear()
 		, colorScale = d3.scale.linear()
 		, stackLayout
 		, y0 = function (d) { return yScale(d.y0) ; }
@@ -369,13 +391,7 @@ chartme.bar = function () {
 		visHeight = height - margin.top - margin.bottom;
 
 		// Init scales.
-		xScale = d3.scale.ordinal()
-			// .rangeBands([0, visWidth], 0.15)
-			;
-
-		yScale = d3.scale.linear()
-			.range([visHeight, 0])
-			;
+		yScale.range([visHeight, 0]);
 
 		// Init layout.
 		stackLayout = d3.layout.stack()
@@ -388,12 +404,11 @@ chartme.bar = function () {
 			.scale(yScale)
 			.orient("right")
 			.ticks(2)
-			// .tickSize(width)
 			.tickSubdivide(true)
 			;
 	}
 
-	function widthChange(width) {
+	function widthChange() {
 		visWidth  = width - margin.left - margin.right;
 
 		svg.attr("width", width);
@@ -601,7 +616,7 @@ chartme.bar = function () {
 		if (!arguments.length) return width;
 		width = value ? value : width;
 		if (currentData) {
-			widthChange(width);
+			widthChange();
 		}
 		return chart;
 	};
@@ -668,7 +683,7 @@ chartme.hbar = function () {
 		, vis
 		, xAxis
 		, yAxis
-		, xScale
+		, xScale = d3.scale.ordinal()
 		, yScale = d3.scale.linear()
 		, colorScale = d3.scale.linear()
 		, stackLayout
@@ -680,10 +695,6 @@ chartme.hbar = function () {
 	function init() {
 		// Init metrics.
 		visHeight = height - margin.top - margin.bottom;
-
-		// Init scales.
-		xScale = d3.scale.ordinal()
-			.rangeBands([-visHeight, 0], 0.15);
 
 		// Init layout.
 		stackLayout = d3.layout.stack()
@@ -860,6 +871,8 @@ chartme.hbar = function () {
 
 		// Update domain scales with the new data.
 		xScale.domain(d3.range(0, data[0].length));
+
+		xScale.rangeBands([-visHeight, 0], 0.15);
 
 		if (xScale.rangeBand() > minRangeBand) {
 			xScale.rangeBands([-minRangeBand * 1.15 * data[0].length, 0], 0.15);

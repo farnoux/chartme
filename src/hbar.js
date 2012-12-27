@@ -19,7 +19,7 @@ chartme.hbar = function () {
 		, vis
 		, xAxis
 		, yAxis
-		, xScale
+		, xScale = d3.scale.ordinal()
 		, yScale = d3.scale.linear()
 		, colorScale = d3.scale.linear()
 		, stackLayout
@@ -31,10 +31,6 @@ chartme.hbar = function () {
 	function init() {
 		// Init metrics.
 		visHeight = height - margin.top - margin.bottom;
-
-		// Init scales.
-		xScale = d3.scale.ordinal()
-			.rangeBands([-visHeight, 0], 0.15);
 
 		// Init layout.
 		stackLayout = d3.layout.stack()
@@ -211,6 +207,8 @@ chartme.hbar = function () {
 
 		// Update domain scales with the new data.
 		xScale.domain(d3.range(0, data[0].length));
+
+		xScale.rangeBands([-visHeight, 0], 0.15);
 
 		if (xScale.rangeBand() > minRangeBand) {
 			xScale.rangeBands([-minRangeBand * 1.15 * data[0].length, 0], 0.15);
