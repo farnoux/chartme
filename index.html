@@ -82,6 +82,8 @@
 </head>
 <body>
 
+	<div id="special-donut" class="chart" data-chart='{"type":"donut", "colorProperty": 2, "data":[["1","32","#4BA638"],["2","21","#ff9628"],["3","8","#ff1C03"]]}'></div>
+
 	<div class="chart bar full-width" data-chart='{"type":"bar"}'></div>
 
 	<div class="chart hbar full-width" data-chart='{"type":"hbar"}'></div>
@@ -174,6 +176,7 @@
 		var donutData = [["Fred Arnoux",1.60],["Fred+1",8.11],["Fred+2",21.15], ["Other","11"]];
 
 		var donut = $(".chart-donut").chartme();
+		var specialDonut = $("#special-donut").chartme();
 
 
 		//

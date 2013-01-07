@@ -27,13 +27,11 @@
 			chart.yFormat(format[options.format]);
 		}
 
-		if(options.colors) {
-			chart.colors(options.colors);
-		}
-
-		if(options.data) {
-			chart.data(options.data);
-		}
+		$.each(["colors", "colorProperty", "data"], function (index, property) {
+			if (options[property]) {
+				chart[property](options[property]);
+			}
+		});
 
 		return chart;
 	};

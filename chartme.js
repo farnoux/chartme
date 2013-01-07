@@ -10,6 +10,7 @@ chartme.donut = function() {
 		, donutRate = 0.6
 		, valueProperty = "value"
 		, labelProperty = "label"
+		, colorProperty
 		, svg
 		, vis
 		, arc = d3.svg.arc()
@@ -98,6 +99,17 @@ chartme.donut = function() {
 		};
 	}
 
+	function textPosition (d) {
+		return "translate(" + arc.centroid(d) + ")";
+	}
+
+	function fillColor(d) {
+		if (colorProperty) {
+			return d.data[colorProperty];
+		}
+		return colorScale(d.data[valueProperty]);
+	}
+
 	function renderChart(data) {
 		var slices = vis.selectAll("g.slice")
 					.data(data);
@@ -111,7 +123,7 @@ chartme.donut = function() {
 		// Slice path.
 		g.append("path")
 			.attr("stroke", "#fff")
-			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.attr("fill", fillColor)
 			.each(function (d) { this._current = d; })
 			;
 
@@ -119,16 +131,14 @@ chartme.donut = function() {
 		g.append("text")
 			// Center the text on its origin.
 			.attr("text-anchor", "middle")
-			.attr("transform", function (d) {
-				return "translate(" + arc.centroid(d) + ")";
-			})
+			.attr("transform", textPosition)
 			.text(sliceLabel)
 			;
 
 		// Update.
 		slices.select("path").transition()
 			.duration(300)
-			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.attr("fill", fillColor)
 			.attrTween("d", arcTween)
 				// .attr("d", arc)
 				;
@@ -137,9 +147,7 @@ chartme.donut = function() {
 		slices.select("text").transition()
 			.duration(300)
 			// Position the label origin to the slice's center.
-			.attr("transform", function (d) {
-				return "translate(" + arc.centroid(d) + ")";
-			})
+			.attr("transform", textPosition)
 			.text(sliceLabel)
 			;
 
@@ -147,9 +155,8 @@ chartme.donut = function() {
 		slices.exit().transition()
 			.duration(300)
 			.select("path")
-			.attr("fill", function (d, i) { return colorScale(d.data[valueProperty]); })
+			.attr("fill", fillColor)
 			.attrTween("d", arcTween)
-			// .attr("fill", "red")
 			.remove()
 			;
 	}
@@ -205,6 +212,12 @@ chartme.donut = function() {
 	chart.label = function (value) {
 		if (!arguments.length) return labelProperty;
 		labelProperty = value;
+		return chart;
+	};
+
+	chart.colorProperty = function (value) {
+		if (!arguments.length) return colorProperty;
+		colorProperty = value;
 		return chart;
 	};
 
