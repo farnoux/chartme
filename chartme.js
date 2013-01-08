@@ -11,7 +11,6 @@ chartme.donut = function() {
 		, donutRate = 0.6
 		, valueProperty = "value"
 		, labelProperty = "label"
-		, colorProperty
 		, svg
 		, vis
 		, arc = d3.svg.arc()
@@ -83,9 +82,6 @@ chartme.donut = function() {
 	}
 
 	function fillColor(d) {
-		if (colorProperty) {
-			return d.data[colorProperty];
-		}
 		return colorScale(d.data[valueProperty]);
 	}
 
@@ -199,12 +195,6 @@ chartme.donut = function() {
 	chart.label = function (value) {
 		if (!arguments.length) return labelProperty;
 		labelProperty = value;
-		return chart;
-	};
-
-	chart.colorProperty = function (value) {
-		if (!arguments.length) return colorProperty;
-		colorProperty = value;
 		return chart;
 	};
 
