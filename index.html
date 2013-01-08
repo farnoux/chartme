@@ -78,11 +78,30 @@
 		.y.axis line, .x.axis line {
 			stroke: #ddd;
 		}
+
+		.smiley-happy path {
+			fill: #4BA638;
+		}
+		.smiley-happy rect {
+			fill: url(#icon-happy);
+		}
+		.smiley-ok path {
+			fill: #ff9628;
+		}
+		.smiley-ok rect {
+			fill: url(#icon-ok);
+		}
+		.smiley-grumpy path {
+			fill: #ff1C03;
+		}
+		.smiley-grumpy rect {
+			fill: url(#icon-grumpy);
+		}
 	</style>
 </head>
 <body>
 
-	<div id="special-donut" class="chart" data-chart='{"type":"donut", "colorProperty": 2, "data":[["1","32","#4BA638"],["2","21","#ff9628"],["3","8","#ff1C03"]]}'></div>
+	<div id="special-donut" class="chart" data-chart='{"type":"donut", "data":[["1","32"],["2","21"],["3","8"]]}'></div>
 
 	<div class="chart bar full-width" data-chart='{"type":"bar"}'></div>
 
@@ -175,8 +194,61 @@
 
 		var donutData = [["Fred Arnoux",1.60],["Fred+1",8.11],["Fred+2",21.15], ["Other","11"]];
 
+		function appendSmileyPattern(defs, id, x) {
+			defs
+				.append('pattern')
+					.attr('id', id)
+					.attr('patternUnits', 'userSpaceOnUse')
+					.attr('width', 42)
+					.attr('height', 42)
+				.append("image")
+					.attr("xlink:href", "satisfaction-smiley.png")
+					.attr("width", 168)
+					.attr("height", 62)
+					.attr("x", -x)
+					;
+		}
+
+		function onSliceEnter(slice) {
+			// `this` is the chart object.
+			var radius = this.radius();
+
+			slice.attr("class", function (d) {
+				var className = {
+					1: "smiley-happy",
+					2: "smiley-ok",
+					3: "smiley-grumpy"
+				}[d.data[0]];
+				return d3.select(this).attr("class") + " " + className;
+			});
+
+			slice.append("rect")
+				.attr("width", 42)
+				.attr("height", 42)
+				.attr("transform", function (d) {
+					var outerArc = d3.svg.arc()
+						.outerRadius(radius * 2.4)
+						.innerRadius(0);
+					return "translate(" + outerArc.centroid(d) + "), translate(-21,-21)";
+				})
+				;
+		}
+
+		function onSvgInit (svg) {
+			var defs = svg.append('defs');
+			appendSmileyPattern(defs, "icon-happy", 0);
+			appendSmileyPattern(defs, "icon-ok", 42);
+			appendSmileyPattern(defs, "icon-grumpy", 84);
+		}
+
 		var donut = $(".chart-donut").chartme();
-		var specialDonut = $("#special-donut").chartme();
+
+		var specialDonut = $("#special-donut").chartme({
+			dispatch : function (dispatch) {
+				dispatch.on("svgInit", onSvgInit);
+				dispatch.on("sliceEnter", onSliceEnter);
+			}
+		});
 
 
 		//

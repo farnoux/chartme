@@ -27,7 +27,7 @@
 			chart.yFormat(format[options.format]);
 		}
 
-		$.each(["colors", "colorProperty", "data"], function (index, property) {
+		$.each(["colors", "dispatch", "data"], function (i, property) {
 			if (options[property]) {
 				chart[property](options[property]);
 			}
