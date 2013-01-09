@@ -23,11 +23,10 @@
 		};
 
 		if (options.format) {
-			console.log(format[options.format]);
 			chart.yFormat(format[options.format]);
 		}
 
-		$.each(["colors", "dispatch", "data"], function (i, property) {
+		$.each(["colors", "radiusOffset", "dispatch", "data"], function (i, property) {
 			if (options[property]) {
 				chart[property](options[property]);
 			}

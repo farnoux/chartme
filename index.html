@@ -199,13 +199,14 @@
 				.append('pattern')
 					.attr('id', id)
 					.attr('patternUnits', 'userSpaceOnUse')
-					.attr('width', 42)
-					.attr('height', 42)
+					.attr('width', 20)
+					.attr('height', 20)
 				.append("image")
 					.attr("xlink:href", "satisfaction-smiley.png")
 					.attr("width", 168)
 					.attr("height", 62)
 					.attr("x", -x)
+					.attr("y", -42)
 					;
 		}
 
@@ -223,22 +224,36 @@
 			});
 
 			slice.append("rect")
-				.attr("width", 42)
-				.attr("height", 42)
+				.attr("width", 20)
+				.attr("height", 20)
 				.attr("transform", function (d) {
 					var outerArc = d3.svg.arc()
-						.outerRadius(radius * 2.4)
+						.outerRadius(radius * 2.2)
 						.innerRadius(0);
-					return "translate(" + outerArc.centroid(d) + "), translate(-21,-21)";
+					return "translate(" + outerArc.centroid(d) + "), translate(-10,-10)";
 				})
 				;
+		}
+
+		function onSliceUpdate(slice, transformTween) {
+			var outerArc = d3.svg.arc()
+				.outerRadius(this.radius() * 2.2)
+				.innerRadius(0);
+
+			slice.select("rect")
+				.attrTween("transform", transformTween(outerArc, ", translate(-10,-10)"))
+				;
+		}
+
+		function onSliceExit(slice) {
+			slice.select("rect").remove();
 		}
 
 		function onSvgInit (svg) {
 			var defs = svg.append('defs');
 			appendSmileyPattern(defs, "icon-happy", 0);
-			appendSmileyPattern(defs, "icon-ok", 42);
-			appendSmileyPattern(defs, "icon-grumpy", 84);
+			appendSmileyPattern(defs, "icon-ok", 20);
+			appendSmileyPattern(defs, "icon-grumpy", 40);
 		}
 
 		var donut = $(".chart-donut").chartme();
@@ -247,7 +262,10 @@
 			dispatch : function (dispatch) {
 				dispatch.on("svgInit", onSvgInit);
 				dispatch.on("sliceEnter", onSliceEnter);
-			}
+				dispatch.on("sliceUpdate", onSliceUpdate);
+				dispatch.on("sliceExit", onSliceExit);
+			},
+			radiusOffset: 30
 		});
 
 
@@ -294,10 +312,13 @@
 			// bar.data(data);
 			barChart.data(stackData);
 			hBarChart.data(stackData3);
-			donut.data(donutData);
 
-			donut.width(100);
+			donut.data(donutData);
+			donut.width(200);
 			donut.refresh();
+
+			specialDonut.data([["1","28"],["3","18"]]);
+			// specialDonut.data([["1","28"],["2",0],["3","18"]]);
 		});
 
 		$(window).on("resize", function() {

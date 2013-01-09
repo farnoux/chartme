@@ -8,6 +8,7 @@ chartme.donut = function() {
 		, height = 300
 		, colors = ["#e6f6ff", "#98d8fd"]
 		, radius
+		, radiusOffset = 0
 		, donutRate = 0.6
 		, valueProperty = "value"
 		, labelProperty = "label"
@@ -17,33 +18,38 @@ chartme.donut = function() {
 		, colorScale
 		, pieLayout
 		, currentData
-		, dispatch = d3.dispatch("svgInit", "sliceEnter", "sliceUpdate")
+		, dispatch = d3.dispatch("svgInit", "sliceEnter", "sliceUpdate", "sliceExit")
 		;
 
+	function dataId (d) {
+		return d.data[labelProperty];
+	}
 
 	function initSvg() {
-		svg = element.append("svg")
-				.attr("height", height);
-
-		vis = svg.append("g")
-				// Move the center of the chart from 0, 0 to radius, radius
-				.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
+		svg = element.append("svg");
+		vis = svg.append("g");
 
 		dispatch.svgInit.call(chart, svg);
 
-		widthChange();
+		onDimensionsChange();
 	}
 
-	function widthChange() {
-		radius = Math.min(width, height) * 0.5;
+	function onDimensionsChange() {
+		svg
+			.attr("width", width)
+			.attr("height", height);
+
+		// Move the center of the chart from 0,0 to radius,radius.
+		vis.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
+
+		// If the radius has not been manually specified, calculate it from the width/height.
+		radius = Math.min(width, height) * 0.5 - radiusOffset;
 
 		// Generate arc data used by <path> elements.
-		arc.outerRadius(radius * 0.98)
+		arc
+			.outerRadius(radius * 0.98)
 			.innerRadius(radius * donutRate)
 			;
-
-		svg.attr("width", width);
-		vis.attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
 	}
 
 	function chart() {
@@ -69,11 +75,24 @@ chartme.donut = function() {
 	// Store the currently-displayed angles in this._current.
 	// Then, interpolate from this._current to the new angles.
 	// See http://bl.ocks.org/1346410
-	function arcTween(a) {
-		var i = d3.interpolate(this._current, a);
-		this._current = i(0);
+	function arcTween(d) {
+		var i = d3.interpolate(this._current || d, d);
+		this._current = d;
+		// this._current = { startAngle: d.startAngle, endAngle: d.endAngle };
+
 		return function (t) {
 			return arc(i(t));
+		};
+	}
+
+	function transformTween(arc, additionalTransformation) {
+		additionalTransformation = additionalTransformation || "";
+		return function (d) {
+			var i = d3.interpolate(this._current || d, d);
+			this._current = d;
+			return function (t) {
+				return "translate(" + arc.centroid(i(t)) + ")" + additionalTransformation;
+			};
 		};
 	}
 
@@ -91,7 +110,7 @@ chartme.donut = function() {
 		}
 
 		var slices = vis.selectAll("g.slice")
-					.data(data);
+			.data(data, dataId);
 
 		// Create.
 		var g = slices.enter()
@@ -102,7 +121,6 @@ chartme.donut = function() {
 		g.append("path")
 			.attr("stroke", "#fff")
 			.attr("fill", fillColor)
-			.each(function (d) { this._current = d; })
 			;
 
 		// Slice label.
@@ -117,31 +135,30 @@ chartme.donut = function() {
 		dispatch.sliceEnter.call(chart, g);
 
 		// Update.
-		slices.select("path").transition()
-			.duration(300)
+		var update = slices
+			.transition()
+			.duration(300);
+
+		update.select("path")
 			.attr("fill", fillColor)
 			.attrTween("d", arcTween)
 			;
 
-
-		slices.select("text").transition()
-			.duration(300)
+		update.select("text")
 			// Position the label origin to the slice's center.
-			.attr("transform", textPosition)
+			// .attr("transform", textPosition)
+			.attrTween("transform", transformTween(arc))
 			.text(sliceLabel)
 			;
 
 		// Dispatch "sliceUpdate" event.
-		// dispatch.sliceUpdate.call(chart, slices.transition().duration(300));
+		dispatch.sliceUpdate.call(chart, update, transformTween);
 
 		// Remove.
-		slices.exit().transition()
-			.duration(300)
-			.select("path")
-			.attr("fill", fillColor)
-			.attrTween("d", arcTween)
-			.remove()
-			;
+		var exit = slices.exit().remove();
+
+		// Dispatch "sliceExit" event.
+		dispatch.sliceExit.call(chart, exit);
 	}
 
 	chart.data = function (data) {
@@ -149,11 +166,17 @@ chartme.donut = function() {
 			return;
 		}
 
-		data.forEach(function (d) {
-			d[valueProperty] = +d[valueProperty];
-		});
+		// data.forEach(function (d) {
+		// 	d[valueProperty] = +d[valueProperty];
+		// });
 
-		var max = d3.max(data.map(function (d) { return d[valueProperty]; }));
+		var max = d3.max(data.map(function (d) {
+
+			// Cast value to int.
+			d[valueProperty] = +d[valueProperty];
+
+			return d[valueProperty];
+		}));
 
 		colorScale.domain([0, max]);
 
@@ -167,16 +190,23 @@ chartme.donut = function() {
 
 	chart.width = function(value) {
 		if (!arguments.length) return width;
-		width = value ? value : width;
-		if (currentData) {
-			widthChange();
-		}
+		width = value;
 		return chart;
 	};
 
 	chart.height = function(value) {
 		if (!arguments.length) return height;
 		height = value;
+		return chart;
+	};
+
+	chart.radius = function() {
+		return radius;
+	};
+
+	chart.radiusOffset = function(value) {
+		if (!arguments.length) return radiusOffset;
+		radiusOffset = value;
 		return chart;
 	};
 
@@ -198,10 +228,6 @@ chartme.donut = function() {
 		return chart;
 	};
 
-	chart.radius = function () {
-		return radius;
-	};
-
 	chart.dispatch = function (callback) {
 		if (!arguments.length) return dispatch;
 		callback(dispatch);
@@ -209,6 +235,7 @@ chartme.donut = function() {
 	};
 
 	chart.refresh = function () {
+		onDimensionsChange();
 		renderChart(currentData);
 		return chart;
 	};
