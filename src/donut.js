@@ -75,7 +75,7 @@ chartme.donut = function() {
 	// Then, interpolate from this._current to the new angles.
 	// See http://bl.ocks.org/1346410
 	function arcTween(d) {
-		var i = d3.interpolate(this._current || d, d);
+		var i = d3.interpolate(this._current || { startAngle: 2*Math.PI, endAngle: 2*Math.PI }, d);
 		this._current = d;
 		// this._current = { startAngle: d.startAngle, endAngle: d.endAngle };
 
@@ -87,7 +87,7 @@ chartme.donut = function() {
 	function transformTween(arc, additionalTransformation) {
 		additionalTransformation = additionalTransformation || "";
 		return function (d) {
-			var i = d3.interpolate(this._current || d, d);
+			var i = d3.interpolate(this._current || { startAngle: 2*Math.PI, endAngle: 2*Math.PI }, d);
 			this._current = d;
 			return function (t) {
 				return "translate(" + arc.centroid(i(t)) + ")" + additionalTransformation;
