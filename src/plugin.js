@@ -10,7 +10,7 @@
 			.height($this.height());
 
 		if (options.type === "donut") {
-			chart.label(0).value(1);
+			chart.labelProperty(0).valueProperty(1);
 		}
 		else {
 			chart.x(0).y(1);

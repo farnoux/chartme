@@ -12,6 +12,7 @@ chartme.donut = function() {
 		, donutRate = 0.6
 		, valueProperty = "value"
 		, labelProperty = "label"
+		, idProperty
 		, svg
 		, vis
 		, arc = d3.svg.arc()
@@ -22,7 +23,7 @@ chartme.donut = function() {
 		;
 
 	function dataId (d) {
-		return d.data[labelProperty];
+		return d.data[(idProperty !== undefined) ? idProperty : labelProperty];
 	}
 
 	function initSvg() {
@@ -216,15 +217,21 @@ chartme.donut = function() {
 		return chart;
 	};
 
-	chart.value = function (value) {
+	chart.valueProperty = function (value) {
 		if (!arguments.length) return valueProperty;
 		valueProperty = value;
 		return chart;
 	};
 
-	chart.label = function (value) {
+	chart.labelProperty = function (value) {
 		if (!arguments.length) return labelProperty;
 		labelProperty = value;
+		return chart;
+	};
+
+	chart.idProperty = function (value) {
+		if (!arguments.length) return idProperty;
+		idProperty = value;
 		return chart;
 	};
 
