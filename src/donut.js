@@ -126,8 +126,7 @@ chartme.donut = function() {
 		g.append("text")
 			// Center the text on its origin.
 			.attr("text-anchor", "middle")
-			.attr("transform", textPosition)
-			.text(sliceLabel)
+			// .attr("transform", textPosition)
 			;
 
 		// Dispatch "sliceEnter" event.
@@ -147,7 +146,9 @@ chartme.donut = function() {
 			// Position the label origin to the slice's center.
 			// .attr("transform", textPosition)
 			.attrTween("transform", transformTween(arc))
-			.text(sliceLabel)
+			.each("end", function (d) {
+				d3.select(this).text(sliceLabel(d));
+			})
 			;
 
 		// Dispatch "sliceUpdate" event.
