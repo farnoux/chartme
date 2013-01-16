@@ -20,8 +20,15 @@ chartme.donut = function() {
 		, dispatch = d3.dispatch("svgInit", "sliceEnter", "sliceUpdate", "sliceExit")
 		;
 
-	function dataId (d) {
-		return d.data[(idProperty !== undefined) ? idProperty : labelProperty];
+	function propertyFunctor(v) {
+		return typeof v === "function" ? v : function(d) {
+			return d.data[v];
+		};
+	}
+
+	function dataId(d) {
+		var fn = propertyFunctor(idProperty !== undefined ? idProperty : labelProperty);
+		return fn(d);
 	}
 
 	function initSvg() {
@@ -68,7 +75,7 @@ chartme.donut = function() {
 	function sliceLabel(d) {
 		var angle = d.endAngle - d.startAngle;
 		// approximatively, O.6 radians = 34 degrees.
-		return angle > 0.6 ? d.data[labelProperty] : "";
+		return angle > 0.6 ? propertyFunctor(labelProperty)(d) : "";
 	}
 
 	// Store the currently-displayed angles in this._current.

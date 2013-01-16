@@ -264,6 +264,8 @@
 
 		var donut = $(".chart-donut").chartme();
 
+		var rateFormat = d3.format(".0%");
+
 		var specialDonut = $("#special-donut").chartme({
 			dispatch : function (dispatch) {
 				dispatch.on("svgInit", onSvgInit);
@@ -272,6 +274,10 @@
 				dispatch.on("sliceExit", onSliceExit);
 			},
 			radiusOffset: 30
+		})
+		.idProperty(0)
+		.labelProperty(function (d) {
+			return rateFormat((d.endAngle - d.startAngle) / (2 * Math.PI));
 		});
 
 
@@ -319,9 +325,11 @@
 			barChart.data(stackData);
 			hBarChart.data(stackData3);
 
-			donut.data(donutData);
-			donut.width(200);
-			donut.refresh();
+			if (window.donut) {
+				donut.data(donutData);
+				donut.width(200);
+				donut.refresh();
+			}
 
 			specialDonut.data([["1","28"],["3","18"]]);
 			// specialDonut.data([["1","28"],["2",0],["3","18"]]);
