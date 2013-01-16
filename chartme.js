@@ -128,6 +128,7 @@ chartme.donut = function() {
 		g.append("text")
 			// Center the text on its origin.
 			.attr("text-anchor", "middle")
+			.attr("alignment-baseline", "middle")
 			// .attr("transform", textPosition)
 			;
 
