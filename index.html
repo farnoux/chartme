@@ -35,13 +35,17 @@
 		.line {
 			fill: none;
 			stroke: steelblue;
-			stroke-width: 1.5px;
+			stroke-width: 2px;
 		}
 
 		.dot {
 			fill: white;
 			stroke: steelblue;
-			stroke-width: 1.5px;
+			stroke-width: 2px;
+		}
+
+		path.area {
+			fill: #d9efff;
 		}
 /*
 		.axis path, .axis line {
@@ -50,9 +54,6 @@
 			shape-rendering: crispEdges;
 		}
 */
-		.line {
-			stroke-width: 2px;
-		}
 
 		.guideline {
 			stroke: #bbb;
@@ -106,6 +107,8 @@
 	</style>
 </head>
 <body>
+
+	<div class="chart area full-width" data-chart='{"type":"area"}'></div>
 
 	<div id="special-donut" class="chart" data-chart='{"type":"donut", "data":[["1","32"],["2","21"],["3","8"]]}'></div>
 
@@ -281,6 +284,8 @@
 		});
 
 
+		var data0 = [[["20121001",9],["20121002",2],["20121003",12],["20121004",11],["20121005",0],["20121006",2]]];
+
 		//
 		var stackData0 = [[["20121001",9],["20121002",2],["20121003",12],["20121004",11],["20121005",0],["20121006",2]], [["20121001",4],["20121002",5],["20121003",3],["20121004",9],["20121005",3],["20121006",1]]];
 
@@ -303,6 +308,10 @@
 		];
 
 		var stackData2 = [[["20121001",9,"9s"],["20121002",2,"5h"],["20121003",12,"5h"],["20121004",11,"5h"],["20121005",0,"5h"],["20121006",2,"5h"]], [["20121001",4,"5h"],["20121002",5,"8h"],["20121003",3,"9s"],["20121004",9,"5h15s"],["20121005",3,"5h"],["20121006",1,"8s"]]];
+
+
+		var areaChart = $(".chart.area").chartme()
+			.data(data0);
 
 
 		var barChart = $(".chart.bar").chartme()

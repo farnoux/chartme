@@ -36,3 +36,4 @@
 	};
 
 })(jQuery);
+//@ sourceURL=plugin.js

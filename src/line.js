@@ -5,8 +5,6 @@ chartme.line = function(data) {
 		, width  = 600 - margin.left - margin.right
 		, height = 300 - margin.top - margin.bottom
 		, colors = ["#ecf0d1", "#afc331"]
-		, radius = 150
-		, donutRate = 0.6
 		, min = 0
 		, max = d3.max(data.map(function (d) { return d.value; }))
 		, svg
@@ -140,3 +138,4 @@ chartme.line = function(data) {
 
 	return chart;
 };
+//@ sourceURL=src/line.js

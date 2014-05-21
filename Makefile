@@ -2,7 +2,7 @@ JS_FILES = \
 	src/start.js \
 	src/core.js \
 	src/donut.js \
-	src/line.js \
+	src/area.js \
 	src/bar.js \
 	src/hbar.js \
 	src/end.js

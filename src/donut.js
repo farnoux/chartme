@@ -257,3 +257,4 @@ chartme.donut = function() {
 
 	return chart;
 };
+//@ sourceURL=donut.js

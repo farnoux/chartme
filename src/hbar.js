@@ -288,3 +288,4 @@ chartme.hbar = function () {
 
 	return chart;
 };
+//@ sourceURL=hbar.js

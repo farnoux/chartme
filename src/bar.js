@@ -62,7 +62,6 @@ chartme.bar = function () {
 		init();
 
 		svg = this.append("svg")
-				// .attr("width", width)
 				.attr("height", height)
 				;
 
@@ -303,3 +302,4 @@ chartme.bar = function () {
 
 	return chart;
 };
+//@ sourceURL=bar.js
