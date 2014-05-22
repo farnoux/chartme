@@ -4,13 +4,25 @@
 	<meta charset=utf-8 />
 	<title>Chart me</title>
 
-	<script src="components/d3/d3.v2.js"></script>
-	<script src="components/jquery/jquery.js"></script>
-	<script src="components/bootstrap/js/bootstrap-tooltip.js"></script>
+	<script src="bower_components/d3/d3.js"></script>
+	<script src="bower_components/jquery/dist/jquery.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script>
+        $.fn.setLabel = function(){
+            var config = {
+                'text': ' contacts initiés',
+                'padding': 20
+            };
+            return this.each(function(){
+                $(this).find('tspan').append(config.text);
+                $(this).prev().attr('width',$(this).width() + config.padding)
+            });
+        };
+    </script>
 	<script src="chartme.js"></script>
 	<script src="src/plugin.js"></script>
 
-	<link rel="stylesheet" href="components/bootstrap/docs/assets/css/bootstrap.css">
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
 
 	<style type="text/css">
 		#bar-chart-2 {
@@ -104,6 +116,32 @@
 		.smiley-grumpy rect {
 			fill: url(#icon-grumpy);
 		}
+
+        .info{
+            shape-rendering: crispEdges;
+            stroke: 1,2;
+        }
+        .info .hover-container:hover + rect,
+        .info .hover-container:hover ~ text,
+        .info .hover-container:hover ~ line{
+            opacity:1;
+        }
+        .info rect,
+        .info line,
+        .info text{opacity:0;}
+        .info line{
+            stroke: #BCD1E0;
+        }
+        .info text{
+            font-weight:bold;
+            fill:#ffffff;
+        }
+        .info tspan{
+            font-weight:normal;
+        }
+        .label-container{
+            fill: #8EB3CC;
+        }
 	</style>
 </head>
 <body>
@@ -138,19 +176,16 @@
 
 	<script type="text/javascript">
 
+        /*$(".area").on('mouseenter',function(){
+            var isSetted = true;
+            console.log(isSetted)
+            if(isSetted){
+                $(this).find('.labelText').append('plop');
+                isSetted = false;
+            }
 
-		$(".chart").tooltip({
-				html: true
-			, selector: "svg rect"
-			, title: function () {
-				var d = this.__data__;
+        });*/
 
-				var date = d3.time.format("%Y%m%d").parse(d[0]);
-				date = d3.time.format("%d-%m-%Y")(date);
-				return '<b class="lead">' + d[1] + '</b><br>' + date;
-				// return '<b>' + d[1] + '</b><br>' + chart.xOutputFormat()(d[0]);
-			}
-		});
 
 
 		var data1 = [
