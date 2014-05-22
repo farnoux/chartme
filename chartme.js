@@ -263,41 +263,39 @@
     /*global chartme:true, d3:true*/
     chartme.area = function () {
 
-        var
-            margin = { top: 20, right: 20, bottom: 20, left: 30 }
+        var margin = { top: 20, right: 20, bottom: 20, left: 30 },
         // , marginLayer = { top: 15, right: 0, bottom: 0, left: 34}
-            , width = 600
-            , height = 300
-            , visWidth
-            , visHeight
-            , colors = [
+            width = 600,
+            height = 300,
+            visWidth,
+            visHeight,
+            colors = [
                 ["#e6cfec", "#d9efff", "#9632b1"],
                 ["#ecf0d1", "#d8e0a0", "#afc331"],
                 ["#e6f6ff", "#98d8fd"]
-            ]
+            ],
         // , colors = [["#afc331", "#afc331"], ["#9632b1", "#9632b1"], ["#e6f6ff", "#98d8fd"]]
-            , xProperty = 'x'
-            , yProperty = 'y'
-            , yMax
-            , svg
-            , vis
-            , yAxis
-            , xScale = d3.scale.ordinal()
-            , yScale = d3.scale.linear()
-            , colorScale = d3.scale.linear()
-            , stackLayout
-            , y0 = function (d) {
+            xProperty = 'x',
+            yProperty = 'y',
+            yMax,
+            svg,
+            vis,
+            yAxis,
+            xScale = d3.scale.ordinal(),
+            yScale = d3.scale.linear(),
+            colorScale = d3.scale.linear(),
+            stackLayout,
+            y0 = function (d) {
                 return yScale(d.y0);
-            }
-            , y1 = function (d) {
+            },
+            y1 = function (d) {
                 return yScale(d.y + d.y0);
-            }
-            , currentData
-            , interpolation = 'linear'
-            , dotRadius = 6
-            , transitionDuration = 300
-            ;
-
+            },
+            currentData,
+            interpolation = 'linear',
+            dotRadius = 6,
+            transitionDuration = 300
+        ;
 
         function init() {
 
@@ -321,7 +319,7 @@
             // Init axis.
             yAxis = d3.svg.axis()
                 .scale(yScale)
-                .orient("right")
+                .orient('right')
                 .ticks(2)
                 .tickSubdivide(true)
             ;
@@ -330,8 +328,8 @@
         function widthChange() {
             visWidth = width - margin.left - margin.right;
 
-            svg.attr("width", width);
-            vis.attr("width", visWidth);
+            svg.attr('width', width);
+            vis.attr('width', visWidth);
 
             xScale.rangeBands([0, visWidth], 0.15);
             yAxis.tickSize(width);
@@ -340,24 +338,24 @@
         function chart() {
             init();
 
-            svg = this.append("svg")
-                .attr("height", height)
+            svg = this.append('svg')
+                .attr('height', height)
             ;
 
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(" + margin.left + "," + (height - margin.top) + ")")
+            svg.append('g')
+                .attr('class', 'x axis')
+                .attr('transform', 'translate(' + margin.left + ',' + (height - margin.top) + ')')
             ;
 
-            svg.append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(0 ," + margin.top + ")")
+            svg.append('g')
+                .attr('class', 'y axis')
+                .attr('transform', 'translate(0 ,' + margin.top + ')')
             ;
 
-            vis = svg.append("g")
-                .attr("class", "vis")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-                .attr("height", visHeight)
+            vis = svg.append('g')
+                .attr('class', 'vis')
+                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+                .attr('height', visHeight)
             ;
 
             widthChange(width);
@@ -370,22 +368,22 @@
                     return d;
                 });
 
-            dot.enter().append("circle")
-                .attr("class", "dot")
-                .attr("cx", function (d, i) {
+            dot.enter().append('circle')
+                .attr('class', 'dot')
+                .attr('cx', function (d, i) {
                     return xScale(i);
                 })
-                .attr("cy", function (d, i) {
+                .attr('cy', function (d, i) {
                     return yScale(0);
                 })
-                .attr("r", dotRadius);
+                .attr('r', dotRadius);
 
             dot.transition()
                 .duration(transitionDuration)
-                .attr("cx", function (d, i) {
+                .attr('cx', function (d, i) {
                     return xScale(i);
                 })
-                .attr("cy", y1);
+                .attr('cy', y1);
             //   dot.transition()
             //   .duration(300)
             // .attr("cx", function (d, i) { return xScale(i); });
@@ -424,32 +422,6 @@
                 .attr('height', visHeight)
                 .attr('fill', 'transparent')
             ;
-
-            /* var div = d3.select('.chart.area').append('div')
-             .attr('class', 'tooltip')
-             .style("left", function (d, i) {
-             return xScale(i) - width * .5;
-             })
-             .style("top", function (d, i) {
-             return yScale(i) - width * .5;
-             })
-             .style('opacity', 0);
-
-             infoG.on('mouseover', function() {
-             div.transition()
-             .duration(200)
-             .style('opacity', 1);
-             div.html('contact initié')
-             .style("left", function (d, i) { return xScale(i); })
-             .style("top", function (d, i) { return xScale(i); })
-             });
-
-             infoG.on('mouseout', function(d) {
-             div.transition()
-             .duration(500)
-             .style('opacity', 0);
-             });*/
-
 
             renderLabel(layers, data, infoG);
 
@@ -502,9 +474,6 @@
                     return d[1];
                 })
                 .attr('transform', 'translate(20, 0)')
-                .each(function (d) {
-                    labelWidth = this.getBBox().width + margin.left;
-                })
             ;
             label.append('tspan');
 
@@ -522,7 +491,8 @@
                 })
                 .y(function () {
                     return yScale(0);
-                });
+                })
+            ;
 
             var lineUpdate = d3.svg.line()
                 .interpolate(interpolation)
@@ -531,19 +501,23 @@
                 })
                 .y(function (d, i) {
                     return y1(d);
-                });
+                })
+            ;
 
             var lines = layers.selectAll(".line")
-                .data(data);
+                .data(data)
+            ;
 
             lines.enter()
                 .append('path')
                 .attr('class', 'line')
-                .attr('d', line);
+                .attr('d', line)
+            ;
 
             lines.transition()
                 .duration(transitionDuration)
-                .attr('d', lineUpdate);
+                .attr('d', lineUpdate)
+            ;
 
             lines.exit().remove();
         }
@@ -560,7 +534,8 @@
                 })
                 .y1(function (d, i) {
                     return yScale(0);
-                });
+                })
+            ;
 
 
             var areaUpdate = d3.svg.area()
@@ -569,38 +544,38 @@
                     return xScale(i);
                 })
                 .y0(y0)
-                .y1(y1);
+                .y1(y1)
+            ;
 
 
-            var areas = layers.selectAll(".area")
+            var areas = layers.selectAll('.area')
                 .data(data);
             // .data(function (d) { return d; });
 
 
-            areas.enter().append("path")
-                .attr("class", "area")
-                .attr("d", area);
+            areas.enter().append('path')
+                .attr('class', 'area')
+                .attr('d', area);
 
             areas.transition()
                 .duration(transitionDuration)
-                .attr("d", areaUpdate);
+                .attr('d', areaUpdate);
 
             areas.exit().remove();
         }
 
         function renderChart(data) {
 
-            var layers = vis.selectAll("g.layer")
+            var layers = vis.selectAll('g.layer')
                     .data(data)
                 ;
 
-            layers.enter().append("g")
-                .attr("class", "layer")
-                .attr("transform", "translate( " + xScale.rangeBand() * 0.5 + " , 0)")
+            layers.enter().append('g')
+                .attr('class', 'layer')
+                .attr('transform', 'translate( ' + xScale.rangeBand() * 0.5 + ' , 0)')
             ;
 
             layers.exit().remove();
-
 
             renderArea(layers, data);
             renderLines(layers, data);
@@ -627,8 +602,8 @@
 
 
             // Add x axis.
-            xAxis = svg.select(".x.axis")
-                .selectAll("g")
+            xAxis = svg.select('.x.axis')
+                .selectAll('g')
                 .data(axisData)
             ;
 
@@ -636,39 +611,39 @@
                 return xScale(i * tickEachIndex) + xScale.rangeBand() * 0.5;
             };
 
-            xTick = xAxis.enter().append("g")
+            xTick = xAxis.enter().append('g')
             ;
 
-            xTick.append("line")
-                .attr("class", "tick")
-                .attr("x1", x)
-                .attr("x2", x)
-                .attr("y1", 0)
-                .attr("y2", 5)
+            xTick.append('line')
+                .attr('class', 'tick')
+                .attr('x1', x)
+                .attr('x2', x)
+                .attr('y1', 0)
+                .attr('y2', 5)
             ;
 
-            xTick.append("text")
-                .attr("x", x)
-                .attr("dy", 16)
-                .attr("text-anchor", "middle")
+            xTick.append('text')
+                .attr('x', x)
+                .attr('dy', 16)
+                .attr('text-anchor', 'middle')
                 .text(function (d) {
                     return d[xProperty];
                 })
             ;
 
-            xAxis.select("line").transition()
+            xAxis.select('line').transition()
                 .duration(transitionDuration)
-                .attr("x1", x)
-                .attr("x2", x)
+                .attr('x1', x)
+                .attr('x2', x)
             ;
 
-            xAxis.select("text").transition()
+            xAxis.select('text').transition()
                 .duration(transitionDuration)
                 .attr("x", x)
             ;
 
             // Add y axis.
-            svg.select(".y.axis")
+            svg.select('.y.axis')
                 // .transition()
                 //  .delay(1000)
                 //  .duration(transitionDuration)
@@ -676,9 +651,9 @@
             ;
 
             // Position y axis labels.
-            svg.selectAll(".y.axis text")
-                .attr("x", 0)
-                .attr("dy", -2)
+            svg.selectAll('.y.axis text')
+                .attr('x', 0)
+                .attr('dy', -2)
             ;
 
         }
